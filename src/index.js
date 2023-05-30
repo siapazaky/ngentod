@@ -6,6 +6,7 @@ import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
 import spotifyApi from "./spotifyApi";
 import riotApi from "./riotApi";
+import imgurApi from "./imgurApi";
 import jp from "jsonpath";
 import { stringify } from "querystring";
 
@@ -550,10 +551,22 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
       prompt: prompt,
       n: 1,
       size: "1024x1024",
-      response_format: "url"
+      response_format: "b64_json"
     });
-    console.log(response);
-    image_url = response.data.data[0].url;
+    let openai_b64 = response.data.data[0].b64_json;
+    const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+    const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+    const imgur_user = "imgur_ahmedrangel";
+    let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
+      if (imgur_user == users_keys.key) {
+        const { access_token } = await imgur.RefreshToken(users_keys.value);
+        const respuesta = await imgur.UploadImage(access_token, prompt, openai_b64);
+        const imgurl = respuesta.data.link;
+        return imgurl;
+      }
+    })))).filter(users_keys => users_keys);
+    image_url = imgur_url;
   } catch (error) {
     if (error.response) {
       console.log(error.response.status);
@@ -818,10 +831,19 @@ router.get("/spotify/current_playing/:channelID/:channel", async (req, env) => {
   }
 });
 
+router.get("/put-r2-image", async (req, env,) => {
+  const form = new FormData()
+  const url = "https://pesp.gg/images/banners/Principal_f.jpg";
+  const data = await fetch(url);
+  const imageBlob = await data.blob();
+  const object = await env.R2gpt.put("openaiIMGG", imageBlob);
+  return new Response(object);
+});
+
 router.get("/put-r2", async (req, env,) => {
   const httpHeaders = {"Content-Type": "text/plain; charset=utf-8"};
   const headers = new Headers(httpHeaders);
-  const object = await env.R2gpt.put("objectName.txt","cómo estás", {httpMetadata: headers});
+  const object = await env.R2gpt.put("Object.txt","cómo estás", {httpMetadata: headers});
   return new Response(await object);
 });
 
@@ -934,7 +956,8 @@ router.get("/lol/live-game?", async (req, env,) => {
 
 router.get("/lol/profile-for-discord?", async (req, env,) => {
   const { query } = req
-  const region = query.region;
+  let region = query.region;
+  region = region.toLowerCase();
   const summoner = query.summoner;
   let profile_data;
   let rank_profile = [];
@@ -944,49 +967,106 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
   console.log(region);
   console.log(region_route);
   if (summoner && region_route !== false && region !== undefined) {
-    const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region.toLowerCase()}.json`);
+    const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
     const ddversions_data = await ddversions.json();
-    const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
-    const champion_data = await champion_list.json();
     const summoner_data = await riot.SummonerDataByName(summoner, region_route);
-    const summoner_id = summoner_data.id;
-    const summoner_level = summoner_data.summonerLevel;
-    const summoner_icon = summoner_data.profileIconId;
-    const summoner_name = summoner_data.name;
-    const puuid = summoner_data.puuid;
-    profile_data = {summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase()};
-    const ranked_data = await riot.RankedData(summoner_id, region_route);
-    for (let i = 0; i < ranked_data.length; i++) {
-      const tier = riot.tierCase(ranked_data[i].tier).full.toUpperCase();
-      rank_profile.push({leagueId: ranked_data[i].leagueId, queueType: ranked_data[i].queueType, tier: tier, rank: ranked_data[i].rank, leaguePoints: ranked_data[i].leaguePoints, wins: ranked_data[i].wins, losses: ranked_data[i].losses});
-    }
-    profile_data.rankProfile = rank_profile;
-    const count = 10;
-    const regional_routing = riot.RegionalRouting(region);
-    console.log(regional_routing);
-    const matchesId = await riot.GetMatches(puuid, regional_routing ,count);
-    console.log(matchesId);
-    for (let i = 0; i < matchesId.length; i++) {
-      const match_data = await riot.getMatchFromId(matchesId[i], regional_routing);
-      const gameEndTimestamp = match_data.info.gameEndTimestamp;
-      const queueId = match_data.info.queueId;
-      const queueName = riot.queueCase(queueId);
-      const participantId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`));
-      const championName = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championName`));
-      const kills = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`));
-      const deaths = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`));
-      const assists = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`));
-      const summoner1Id = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`));
-      const summoner2Id = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`));
-      const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
-      if (summoner_id == participantId) {
-      match_history.push({orderId: i, gameEndTimestamp: gameEndTimestamp, queueName: queueName.full_name, championName: championName,
-                          kills: kills, deaths: deaths, assists: assists, summoner1Id: summoner1Id, summoner2Id: summoner2Id, win: win, strTime: getDateAgoFromTimeStamp(gameEndTimestamp)})
+    if (summoner_data.status == undefined) {
+      const summoner_id = summoner_data.id;
+      const summoner_level = summoner_data.summonerLevel;
+      const summoner_icon = summoner_data.profileIconId;
+      const summoner_name = summoner_data.name;
+      const puuid = summoner_data.puuid;
+      profile_data = {status_code: 200, summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase()};
+      const ranked_data = await riot.RankedData(summoner_id, region_route);
+      ranked_data.forEach((rankedData) => {
+        const tier = riot.tierCase(rankedData.tier).full.toUpperCase();
+        rank_profile.push({leagueId: rankedData.leagueId, queueType: rankedData.queueType, tier: tier, rank: rankedData.rank, leaguePoints: rankedData.leaguePoints, wins: rankedData.wins, losses: rankedData.losses});
+      });
+      const queue_sort_first = "RANKED_SOLO_5x5";
+      const queue_sort_second = "RANKED_FLEX_SR";
+      rank_profile.sort((a,b) => {
+        const solo = a.queueType;
+        const flex = b.queueType;
+        if (solo === queue_sort_first) {
+          return -1;
+        }
+        
+        if (flex === queue_sort_first) {
+          return 1;
+        }
+
+        if (solo === queue_sort_second) {
+          return -1;
+        }
+      
+        if (flex === queue_sort_second) {
+          return 1;
+        }
+        return 0;
+      });
+      profile_data.rankProfile = rank_profile;
+      
+      const count = 10;
+      const regional_routing = riot.RegionalRouting(region);
+      console.log(regional_routing);
+      const matchesId = await riot.GetMatches(puuid, regional_routing ,count);
+      const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
+      const champion_data = await champion_list.json();
+      console.log(matchesId);
+      for (let i = 0; i < matchesId.length; i++) {
+        const match_data = await riot.getMatchFromId(matchesId[i], regional_routing);
+        const gameEndTimestamp = match_data.info.gameEndTimestamp;
+        const queueId = match_data.info.queueId;
+        const queueName = riot.queueCase(queueId);
+        const participantId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`));
+        const championId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`));
+        const championName = String(jp.query(champion_data.data, `$..[?(@.key==${championId})].name`)) 
+        const kills = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`));
+        const deaths = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`));
+        const assists = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`));
+        const summoner1Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`));
+        const summoner2Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`));
+        const remake = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`));
+        const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
+        if (summoner_id == participantId) {
+        match_history.push({orderId: i, gameEndTimestamp: gameEndTimestamp, queueName: queueName.full_name, championName: championName,
+                            kills: kills, deaths: deaths, assists: assists, summoner1Id: summoner1Id, summoner2Id: summoner2Id, win: win,
+                            remake: remake, strTime: getDateAgoFromTimeStamp(gameEndTimestamp)});
+        }
       }
+      profile_data.matchesHistory = match_history;
+    } else {
+      profile_data = {status_code: 404, errorName: "summoner"};
     }
-    profile_data.matchesHistory = match_history;
+  } else {
+    profile_data = {status_code: 404, errorName: "region"};
   }
   return new Response(JSON.stringify(profile_data));
+});
+
+router.get("/imgur/auth", async (req, env) => {
+  const dest = new URL("https://api.imgur.com/oauth2/authorize?"); // destination
+  dest.searchParams.append("client_id", env.imgur_client_id);
+  dest.searchParams.append("response_type", "code");
+  console.log(dest);
+  return Response.redirect(dest, 302);
+});
+
+router.get("/imgur/user-oauth?", async (req, env) => {
+  const { query } = req
+  console.log("client_secret "+ env.imgur_client_secret);
+  console.log(query.code);
+  if (query.code) { 
+    const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+    const { refresh_token, access_token, expires_in, account_username } = await imgur.OauthCallback(query.code);
+    const key = "imgur_"+account_username;
+    await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
+    console.log(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`)
+    return new JsResponse(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+  }
+  else {
+    return new JsResponse("Error. Authentication failed.")
+  }
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
