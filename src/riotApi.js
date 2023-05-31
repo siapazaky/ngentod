@@ -109,6 +109,12 @@ class riotApi {
     return response
   }
 
+  async getChellengesData(puuid, regional_routing) {
+    const data = await fetch(`https://${regional_routing}.api.riotgames.com/lol/challenges/v1/player-data/${puuid}?api_key=${this.riot_token}`);
+    const response = await data.json();
+    return response
+  }
+  
   tierCase (option) {
     let tier = {};
     switch (option) {
