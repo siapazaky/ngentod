@@ -197,6 +197,11 @@ class riotApi {
   queueCase (option) {
     let queue = {};
     switch (option) {
+      case 0:
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue_name = "CUSTOM";
+        queue.full_name = "Custom";
+        break;
       case 420:
         queue.profile_rank_type = "RANKED_SOLO_5x5";
         queue.queue_name = "SOLO/DUO-R";
@@ -221,6 +226,11 @@ class riotApi {
         queue.profile_rank_type = "RANKED_SOLO_5x5";
         queue.queue_name = "NORMAL";
         queue.full_name = "Normal";
+        break;
+      case 700:
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue_name = "CLASH";
+        queue.full_name = "Clash";
         break;
       case 900:
         queue.profile_rank_type = "RANKED_SOLO_5x5";
