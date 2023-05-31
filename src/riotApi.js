@@ -114,7 +114,7 @@ class riotApi {
     const response = await data.json();
     return response
   }
-  
+
   tierCase (option) {
     let tier = {};
     switch (option) {
@@ -222,6 +222,17 @@ class riotApi {
         queue.queue_name = "NORMAL";
         queue.full_name = "Normal";
         break;
+      case 900:
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue = "ARURF";
+        queue.full_name = "ARURF";
+        break;
+      default: 
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue = "";
+        queue.full_name = "";
+        break;
+
     }
     return queue;
   }
