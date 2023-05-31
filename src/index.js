@@ -979,10 +979,15 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       const challenges_data = await riot.getChellengesData(puuid, region_route);
       const titleId = challenges_data.preferences.title;
       console.log(titleId);
+      let titleName;
+      if (titleId !== ""){
       const challenges_assets = await fetch("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/challenges.json");
       const challenges_json = await challenges_assets.json();
-      const titleName = String(jp.query(challenges_json, `$..[?(@.itemId==${titleId})].name`));
+      titleName = String(jp.query(challenges_json, `$..[?(@.itemId==${titleId})].name`));
       console.log(titleName);
+      } else {
+        titleName = "";
+      }
       profile_data = {status_code: 200, summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase(), titleName: titleName};
       const ranked_data = await riot.RankedData(summoner_id, region_route);
       ranked_data.forEach((rankedData) => {
