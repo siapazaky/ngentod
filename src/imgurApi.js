@@ -62,6 +62,17 @@ class imgurApi {
         });
         return await data.json(); 
     }
+
+    async GetMyGallery(access_token){
+        const url = `https://api.imgur.com/3/account/me/images`;
+        const data = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + access_token
+            },
+        });
+        return await data.json(); 
+    }
 }
 
 export default imgurApi;
