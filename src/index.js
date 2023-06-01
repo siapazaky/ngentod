@@ -1065,7 +1065,7 @@ router.get("/imgur/auth", async (req, env) => {
 });
 
 router.get("/imgur/user-oauth?", async (req, env) => {
-  const { query } = req
+  const { query } = req;
   console.log("client_secret "+ env.imgur_client_secret);
   console.log(query.code);
   if (query.code) { 
@@ -1077,8 +1077,61 @@ router.get("/imgur/user-oauth?", async (req, env) => {
     return new JsResponse(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
   }
   else {
-    return new JsResponse("Error. Authentication failed.")
+    return new JsResponse("Error. Authentication failed.");
   }
+});
+
+router.get("/imgur/me/gallery", async (req, env) => {
+  const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const imgur_user = "imgur_ahmedrangel";
+  let json = []
+  let imgur_data = (await Promise.all((users_keys.map(async(users_keys) => {
+    if (imgur_user == users_keys.key) {
+      const { access_token } = await imgur.RefreshToken(users_keys.value);
+      const data = imgur.GetMyGallery(access_token);
+      return data;
+    }
+  })))).filter(users_keys => users_keys);
+  for (const images of imgur_data[0].data) {
+    const select = await env.ImgurDiscord.prepare(`SELECT * FROM imgur_discord WHERE imgurId = '${images.id}'`);
+    const select_data = await select.first();
+    let discordUser;
+    let discordAvatar;
+    if (select_data !== null) {
+      discordUser = select_data.discordUser;
+    } else {
+      discordUser = "";
+    }
+    json.push({id: images.id, title: images.title, description: images.description, link: images.link, datetime: images.datetime, discordUser: discordUser});
+  };
+  json = JSON.stringify(json);
+  console.log(json);
+  return new JsResponse(json);
+});
+
+
+router.get("/d1/insert-imgurdiscord?", async (req, env) => {
+  const { query } = req;
+  if (query.imgurId && query.discordUser) {
+    const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser) values ('${query.imgurId}', '${query.discordUser}')`);
+    const data = await insertar.first();
+    return new JsResponse(data);
+  } else {
+    return new JsResponse("No se han encontrado las consultas requeridas en el url");
+  }
+});
+
+router.get("/d1/select?", async (req, env) => {
+  const select = await env.ImgurDiscord.prepare(`SELECT * FROM imgur_discord WHERE imgurId = 'QNDm3'`);
+  const select_data = await select.first();
+  if (select_data !== null) {
+    console.log("no es null");
+  } else {
+    console.log("es null, no pushear");
+  }
+console.log(select_data);
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
