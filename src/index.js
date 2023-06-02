@@ -1098,13 +1098,12 @@ router.get("/imgur/me/gallery", async (req, env) => {
     const select = await env.ImgurDiscord.prepare(`SELECT * FROM imgur_discord WHERE imgurId = '${images.id}'`);
     const select_data = await select.first();
     let discordUser;
-    let discordAvatar;
     if (select_data !== null) {
       discordUser = select_data.discordUser;
     } else {
       discordUser = "";
     }
-    json.push({id: images.id, title: images.title, description: images.description, link: images.link, datetime: images.datetime, discordUser: discordUser});
+    json.push({id: images.id, title: images.title, description: images.description, datetime: images.datetime, discordUser: discordUser});
   };
   json = JSON.stringify(json);
   console.log(json);
