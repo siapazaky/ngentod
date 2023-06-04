@@ -416,7 +416,7 @@ router.get("/ia/:prompt/:user", async (req, env) => {
       presence_penalty: 0,
   });
   console.log(response.data.choices[0].text);
-  return new JsResponse(`${user}, ${response.data.choices[0].text}`);
+  return new JsResponse(`${user}, ${response.data.choices[0].text.replaceAll("\n"," ")}`);
 });
 
 // Openai GPT-3 Translator AI  with Language detection
