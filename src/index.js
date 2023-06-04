@@ -1113,8 +1113,8 @@ router.get("/imgur/me/gallery", async (req, env) => {
 
 router.get("/d1/insert-imgurdiscord?", async (req, env) => {
   const { query } = req;
-  if (query.imgurId && query.discordUser) {
-    const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser) values ('${query.imgurId}', '${query.discordUser}')`);
+  if (query.imgurId && query.discordUser && query.title && query.timestamp) {
+    const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser, title, timestamp) values ('${query.imgurId}', '${query.discordUser}','${query.title}', '${query.timestamp}')`);
     const data = await insertar.first();
     return new JsResponse(data);
   } else {
@@ -1132,6 +1132,34 @@ router.get("/d1/select?", async (req, env) => {
   }
 console.log(select_data);
 });
+
+/*router.get("/d1/insertion-imgur", async (req, env) => {
+const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const imgur_user = "imgur_ahmedrangel";
+  let imgur_data = (await Promise.all((users_keys.map(async(users_keys) => {
+    if (imgur_user == users_keys.key) {
+      const { access_token } = await imgur.RefreshToken(users_keys.value);
+      const data = imgur.GetMyGallery(access_token);
+      return data;
+    }
+  })))).filter(users_keys => users_keys);
+  for (const images of imgur_data[0].data) {
+    const select = await env.ImgurDiscord.prepare(`SELECT * FROM imgur_discord WHERE imgurId = '${images.id}'`);
+    const select_data = await select.first();
+    let discordUser;
+    if (select_data !== null) {
+      discordUser = select_data.discordUser;
+    } else {
+      discordUser = "";
+    }
+    const insert = await env.ImgurDiscord.prepare(`UPDATE imgur_discord SET title = '${images.title}', timestamp = ${images.datetime}) WHERE imgurId = '${images.id}'`);
+    const insert_data = await insert.first();
+  };
+  return new JsResponse("");
+});*/
+
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
