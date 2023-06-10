@@ -8,6 +8,7 @@ import spotifyApi from "./spotifyApi";
 import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
+import { Buffer } from 'node:buffer';
 import { stringify } from "querystring";
 
 const router = Router();
@@ -562,6 +563,74 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
       if (imgur_user == users_keys.key) {
         const { access_token } = await imgur.RefreshToken(users_keys.value);
         const respuesta = await imgur.UploadImage(access_token, prompt, openai_b64);
+        const imgurl = respuesta.data.link;
+        return imgurl;
+      }
+    })))).filter(users_keys => users_keys);
+    image_url = imgur_url;
+  } catch (error) {
+    if (error.response) {
+      console.log(error.response.status);
+      console.log(error.response.data.error.message);
+      image_url = error.response.data.error.message;
+    } else {
+      console.log(error.message);
+      image_url = error.message;
+    }
+  }
+  return new JsResponse(image_url);
+});
+
+router.get("/dc/image-variation/:url", async (req, env) => {
+  let { url } = req.params;
+  let image_url = ""
+  url = decodeURIComponent(url);
+  const filename = url.replace(/^.*[\\\/]/, '');
+  const url_fetch = await fetch(url);
+  const array_buffer = await url_fetch.arrayBuffer();
+  let base64 = Buffer.from(array_buffer).toString('base64');
+  try {
+    const configuration = new Configuration({
+      apiKey: env.openai_token,
+    });
+    const openai = new OpenAIApi(configuration);
+    function DataURIToBlob(dataURI) {
+      const splitDataURI = dataURI.split(',')
+      const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1])
+      const mimeString = splitDataURI[0].split(':')[1].split(';')[0]
+
+      const ia = new Uint8Array(byteString.length)
+      for (let i = 0; i < byteString.length; i++)
+          ia[i] = byteString.charCodeAt(i)
+
+      return new Blob([ia], { type: mimeString })
+    }
+    const file = DataURIToBlob(`data:image/png;base64,${base64}`);
+    const formData = new FormData();
+    formData.append('image', file, 'image.png');
+    formData.append('n', '1');
+    formData.append('size', '1024x1024');
+    formData.append('response_format', 'b64_json');
+    console.log(formData.toString());
+    const oauth_url = `https://api.openai.com/v1/images/variations`;
+        const openaifetch = await fetch(oauth_url, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.openai_token}`,
+            },
+            body: formData
+        });
+    const response = await openaifetch.json();
+    console.log(response);
+    let openai_b64 = response.data[0].b64_json;
+    const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+    const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+    const imgur_user = "imgur_ahmedrangel";
+    let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
+      if (imgur_user == users_keys.key) {
+        const { access_token } = await imgur.RefreshToken(users_keys.value);
+        const respuesta = await imgur.UploadImage(access_token, "Variación de: " + filename, openai_b64);
         const imgurl = respuesta.data.link;
         return imgurl;
       }
