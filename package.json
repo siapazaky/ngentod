@@ -10,7 +10,7 @@
   "dependencies": {
     "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "buffer": "^6.0.3",
-    "crypto": "^1.0.1",
+    "cloudinary": "^1.37.1",
     "detectlanguage": "^2.1.0",
     "itty-router": "^2.6.6",
     "itty-router-extras": "^0.4.2",
