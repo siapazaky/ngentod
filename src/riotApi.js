@@ -22,9 +22,6 @@ class riotApi {
       case "eune":
         region = "eun1";
         break;
-      case "na":
-        region = "na1";
-        break;
       case "br":
         region = "br1";
         break;
