@@ -8,8 +8,6 @@ import spotifyApi from "./spotifyApi";
 import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
-import { Buffer } from 'node:buffer';
-import { stringify } from "querystring";
 
 const router = Router();
 // educar
@@ -583,43 +581,55 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
 
 router.get("/dc/image-variation/:url", async (req, env) => {
   let { url } = req.params;
-  let image_url = ""
+  let image_url = "";
+  let url_fetch;
   url = decodeURIComponent(url);
   const filename = url.replace(/^.*[\\\/]/, '');
-  const url_fetch = await fetch(url);
-  const array_buffer = await url_fetch.arrayBuffer();
-  let base64 = Buffer.from(array_buffer).toString('base64');
-  try {
-    const configuration = new Configuration({
-      apiKey: env.openai_token,
+  const file_extension = filename.replace(/^.*\./, '');
+  const filename_id = url.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "");
+  const fdCloudinary = new FormData();
+    console.log(filename_id);
+    fdCloudinary.append("file", url);
+    fdCloudinary.append("upload_preset", "evtxul2d");
+    fdCloudinary.append("api_key", "292366358173934");
+    fdCloudinary.append("public_id", filename_id);
+    const cloudinary_api = `https://api.cloudinary.com/v1_1/dqkzmhvhf/image/upload`;
+  if (file_extension == "jpg") {
+    console.log("es JPG");
+    const cloudinary_fetch = await fetch(cloudinary_api, {
+      method: "POST",
+      body: fdCloudinary
     });
-    const openai = new OpenAIApi(configuration);
-    function DataURIToBlob(dataURI) {
-      const splitDataURI = dataURI.split(',')
-      const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1])
-      const mimeString = splitDataURI[0].split(':')[1].split(';')[0]
-
-      const ia = new Uint8Array(byteString.length)
-      for (let i = 0; i < byteString.length; i++)
-          ia[i] = byteString.charCodeAt(i)
-
-      return new Blob([ia], { type: mimeString })
-    }
-    const file = DataURIToBlob(`data:image/png;base64,${base64}`);
+    const cloudinary_response  = await cloudinary_fetch.json();
+    const cloudinary_url = cloudinary_response.secure_url;
+    console.log(cloudinary_url);
+    url_fetch = await fetch(cloudinary_url);
+  } else {
+    console.log("es PNG");
+    const cloudinary_fetch = await fetch(cloudinary_api, {
+      method: "POST",
+      body: fdCloudinary
+    });
+    const cloudinary_response  = await cloudinary_fetch.json();
+    url_fetch = await fetch(url);
+  }
+  const blob = await url_fetch.blob();
+  const blob_png = new Blob([blob], { type: "image/png" });
+  try {
+    const file = blob_png;
     const formData = new FormData();
     formData.append('image', file, 'image.png');
     formData.append('n', '1');
     formData.append('size', '1024x1024');
     formData.append('response_format', 'b64_json');
-    console.log(formData.toString());
-    const oauth_url = `https://api.openai.com/v1/images/variations`;
-        const openaifetch = await fetch(oauth_url, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${env.openai_token}`,
-            },
-            body: formData
-        });
+    const variation_fetch = `https://api.openai.com/v1/images/variations`;
+    const openaifetch = await fetch(variation_fetch, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.openai_token}`,
+        },
+        body: formData
+    });
     const response = await openaifetch.json();
     console.log(response);
     let openai_b64 = response.data[0].b64_json;
