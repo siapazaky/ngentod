@@ -591,7 +591,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
     console.log(filename_id);
     fdCloudinary.append("file", url);
     fdCloudinary.append("upload_preset", "evtxul2d");
-    fdCloudinary.append("api_key", "292366358173934");
+    fdCloudinary.append("api_key", env.cloudinary_token);
     fdCloudinary.append("public_id", filename_id);
     const cloudinary_api = `https://api.cloudinary.com/v1_1/dqkzmhvhf/image/upload`;
   if (file_extension == "jpg") {
