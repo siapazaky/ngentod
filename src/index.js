@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { getDateAgoFromTimeStamp, getRandom } from "./funciones";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom } from "./funciones";
 import twitchApi from "./twitchApi";
 import cloudflareApi from "./cloudflareApi";
 import JsResponse from "./response";
@@ -8,6 +8,7 @@ import spotifyApi from "./spotifyApi";
 import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
+import * as cheerio from 'cheerio';
 
 const router = Router();
 // educar
@@ -919,11 +920,44 @@ router.get("/put-r2-image", async (req, env,) => {
   return new Response(object);
 });
 
-router.get("/put-r2", async (req, env,) => {
-  const httpHeaders = {"Content-Type": "text/plain; charset=utf-8"};
-  const headers = new Headers(httpHeaders);
-  const object = await env.R2gpt.put("Object.txt","cómo estás", {httpMetadata: headers});
-  return new Response(await object);
+router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
+  const { query } = req
+  const video_url = query.video_url;
+  console.log(video_url);
+  if (video_url) {
+    const f = await fetch(video_url);
+    const b = await f.arrayBuffer();
+    const type = "video/mp4";
+    const httpHeaders = {"Content-Type": type};
+    const headers = new Headers(httpHeaders);
+    const uniqueId = generateUniqueId();
+
+    const putR2 = async(id) => {
+      const object = await env.R2cdn.put(`gemi-chan/${id}.mp4`, b, {httpMetadata: headers});
+      console.log(`escrito: ${id}`);
+      const for_metadata = await fetch(`https://cdn.ahmedrangel.com/gemi-chan/${id}.mp4`);
+      return `https://cdn.ahmedrangel.com/gemi-chan/${id}.mp4`;
+    };
+
+    const comprobarCDN = async(id) => {
+      const comprobar = await fetch(`https://cdn.ahmedrangel.com/gemi-chan/${id}.mp4`);
+      if (comprobar.status === 200) {
+        console.log("existe, generar nuevo id, y volver a comprobar");
+        const uniqueId = generateUniqueId();
+        return await comprobarCDN(uniqueId);
+      } else {
+        console.log("no existe, put en r2cdn");
+        return await putR2(id);
+      }
+    };
+
+    const response = await comprobarCDN(uniqueId);
+
+    return new JsResponse(response);
+
+  } else {
+    return new JsResponse("Error. No se ha encontrado un video.");
+  }
 });
 
 router.get("/lol/live-game?", async (req, env,) => {
@@ -1212,32 +1246,62 @@ router.get("/d1/select?", async (req, env) => {
 console.log(select_data);
 });
 
-/*router.get("/d1/insertion-imgur", async (req, env) => {
-const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-  const imgur_user = "imgur_ahmedrangel";
-  let imgur_data = (await Promise.all((users_keys.map(async(users_keys) => {
-    if (imgur_user == users_keys.key) {
-      const { access_token } = await imgur.RefreshToken(users_keys.value);
-      const data = imgur.GetMyGallery(access_token);
-      return data;
-    }
-  })))).filter(users_keys => users_keys);
-  for (const images of imgur_data[0].data) {
-    const select = await env.ImgurDiscord.prepare(`SELECT * FROM imgur_discord WHERE imgurId = '${images.id}'`);
-    const select_data = await select.first();
-    let discordUser;
-    if (select_data !== null) {
-      discordUser = select_data.discordUser;
+router.get("/dc/instagram-video-scrapper?", async (req, env) => {
+  const { query } = req;
+  const _cookie = env.ig_cookie;
+  const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+  const _xIgAppId = '936619743392459';
+  const url = decodeURIComponent(query.url);
+  const getInstagramId = (url) => {
+    const regex = /instagram.com\/(?:p|reels|reel)\/([A-Za-z0-9-_]+)/;
+    const match = url.match(regex);
+    console.log(match);
+    if (match && match[1]) {
+        return match[1];
     } else {
-      discordUser = "";
+        return null;
     }
-    const insert = await env.ImgurDiscord.prepare(`UPDATE imgur_discord SET title = '${images.title}', timestamp = ${images.datetime}) WHERE imgurId = '${images.id}'`);
-    const insert_data = await insert.first();
-  };
-  return new JsResponse("");
-});*/
+}
+
+const idUrl = getInstagramId(url);
+
+if (!idUrl) {
+  console.log('Invalid url');
+  return new JsResponse("Url no válida");
+} else {
+  const response = await fetch(`https://www.instagram.com/p/${idUrl}/`, {
+      headers: {
+          "cookie": _cookie,
+          "user-agent": _userAgent,
+          "x-ig-app-id": _xIgAppId,
+          ['sec-fetch-site']: 'same-origin'
+      }
+  });
+  const html = await response.text();
+  const body = cheerio.load(html);
+  const scripts = [];
+  body('script').each((i, el) => {
+      const script = body(el).html();
+      if (script.includes('"items"')) {
+          scripts.push(script);
+
+      }
+  });
+
+  const json = JSON.parse(scripts).require;
+  const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
+  let video_url;
+  console.log(items.video_versions);
+  
+  if (items.video_versions[0].height <= 720) {
+      video_url = items.video_versions[0].url;
+  } else {
+      video_url = items.video_versions[1].url;
+  }
+  console.log(video_url);
+  return new JsResponse(video_url);
+}
+});
 
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
