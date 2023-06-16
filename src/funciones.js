@@ -45,3 +45,16 @@ if (cantidad !== 1) {
 let strTime = `${cantidad} ${unidadTiempo}`;
 return strTime;
 };
+
+export const generateUniqueId = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let uniqueId = '';
+  
+  for (let i = 0; i < 7; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    const randomChar = characters.charAt(randomIndex);
+    uniqueId += randomChar;
+  }
+  
+  return uniqueId;
+}
