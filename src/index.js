@@ -928,7 +928,7 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
     const f = await fetch(video_url);
     const b = await f.arrayBuffer();
     const type = "video/mp4";
-    const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
+    const httpHeaders = {"Content-Type": type, "Content-Disposition": "inline"};
     const headers = new Headers(httpHeaders);
     const uniqueId = generateUniqueId();
 
@@ -1303,6 +1303,34 @@ if (!idUrl) {
 }
 });
 
+router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
+  const { query } = req;
+  const url = decodeURIComponent(query.url);
+  if (url.includes("tiktok.com/")) {
+    console.log("es link de  tiktok");
+    const fetchTikTokMobile = await fetch(url);
+    const html = await fetchTikTokMobile.text();
+    const body = cheerio.load(html);
+    const scripts = [];
+    body('script').each((i, el) =>{
+        const script = body(el).html();
+        if (script.includes('"ItemModule"')) {
+            scripts.push(script);
+        }
+    });
+    const json = JSON.parse(scripts).ItemModule;
+    const tt_id = jp.query(json, "$..[?(@.id)].id")[0];
+    console.log(tt_id);
+    const response = await fetch(`https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
+    const data = await response.json();
+    const video_url = data.aweme_list[0].video.play_addr.url_list[0];
+    console.log(video_url);
+    return new JsResponse(video_url);
+  } else {
+    console.log("no es link de tiktok");
+    return new JsResponse("Url no válida");
+  }
+});
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
