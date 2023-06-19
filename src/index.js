@@ -928,7 +928,7 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
     const f = await fetch(video_url);
     const b = await f.arrayBuffer();
     const type = "video/mp4";
-    const httpHeaders = {"Content-Type": type, "Content-Disposition": "inline"};
+    const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
     const headers = new Headers(httpHeaders);
     const uniqueId = generateUniqueId();
 
