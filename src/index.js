@@ -935,7 +935,6 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
     const putR2 = async(id) => {
       const object = await env.R2cdn.put(`gemi-chan/${id}.mp4`, b, {httpMetadata: headers});
       console.log(`escrito: ${id}`);
-      const for_metadata = await fetch(`https://cdn.ahmedrangel.com/gemi-chan/${id}.mp4`);
       return `https://cdn.ahmedrangel.com/gemi-chan/${id}.mp4`;
     };
 
