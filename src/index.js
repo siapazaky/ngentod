@@ -1292,7 +1292,7 @@ if (!idUrl) {
   const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
   let video_url;
   console.log(items.video_versions);
-  if (items.video_vresions){
+  if (items.video_versions){
     if (items.video_versions[0].height <= 720) {
         video_url = items.video_versions[0].url;
     } else {
