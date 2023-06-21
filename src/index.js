@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom } from "./funciones";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL } from "./funciones";
 import twitchApi from "./twitchApi";
 import cloudflareApi from "./cloudflareApi";
 import JsResponse from "./response";
@@ -9,6 +9,7 @@ import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
 import * as cheerio from 'cheerio';
+import twitterApi from "./twitterApi";
 
 const router = Router();
 // educar
@@ -1298,7 +1299,11 @@ if (!idUrl) {
       video_url = items.video_versions[1].url;
   }
   console.log(video_url);
-  return new JsResponse(video_url);
+  const json_response = {
+    video_url: video_url,
+    short_url: url.replace(/\?.*$/, "").replace("www.","")
+   };
+  return new JsResponse(JSON.stringify(json_response));
 }
 });
 
@@ -1306,7 +1311,7 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
   const { query } = req;
   const url = decodeURIComponent(query.url);
   if (url.includes("tiktok.com/")) {
-    console.log("es link de  tiktok");
+    console.log("es link de tiktok");
     const fetchTikTokMobile = await fetch(url);
     const html = await fetchTikTokMobile.text();
     const body = cheerio.load(html);
@@ -1324,9 +1329,48 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
     const data = await response.json();
     const video_url = data.aweme_list[0].video.play_addr.url_list[0];
     console.log(video_url);
-    return new JsResponse(video_url);
+    const json_response = {
+      video_url: video_url,
+      short_url: url.replace(/\?.*$/, "").replace("www.","")
+     };
+    return new JsResponse(JSON.stringify(json_response));
   } else {
     console.log("no es link de tiktok");
+    return new JsResponse("Url no válida");
+  }
+});
+
+router.get("/dc/twitter-video-scrapper?", async (req, env) => {
+  const { query } = req;
+  const url = decodeURIComponent(query.url);
+  if (url.includes("twitter.com/")) {
+    console.log("es link de twitter");
+    const id = obtenerIDDesdeURL(url);
+    const twitter = new twitterApi(env.twitter_bearer_token);
+    const data = await twitter.getTweet(id);
+    console.log(data);
+    const videos = data[0].extended_entities.media[0].video_info.variants;
+    const short_url = data[0].extended_entities.media[0].url;
+    console.log(videos);
+    let maxBitrate = 0;
+    let video_url = '';
+    for (const video of videos) {
+      if (video.content_type === 'video/mp4' && video.bitrate && video.bitrate > maxBitrate) {
+        maxBitrate = video.bitrate;
+        video_url = video.url;
+      } {
+        maxBitrate = video.bitrate;
+        video_url = video.url;
+      }
+    }
+    console.log(video_url);
+    const json_response = {
+     video_url: video_url,
+     short_url: short_url 
+    };
+    return new JsResponse(JSON.stringify(json_response));
+  } else {
+    console.log("no es link de twitter");
     return new JsResponse("Url no válida");
   }
 });
