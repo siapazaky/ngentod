@@ -1292,11 +1292,14 @@ if (!idUrl) {
   const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
   let video_url;
   console.log(items.video_versions);
-  
-  if (items.video_versions[0].height <= 720) {
-      video_url = items.video_versions[0].url;
+  if (items.video_vresions){
+    if (items.video_versions[0].height <= 720) {
+        video_url = items.video_versions[0].url;
+    } else {
+        video_url = items.video_versions[1].url;
+    }
   } else {
-      video_url = items.video_versions[1].url;
+    video_url = "No es video";
   }
   console.log(video_url);
   const json_response = {
@@ -1349,26 +1352,31 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
     const twitter = new twitterApi(env.twitter_bearer_token);
     const data = await twitter.getTweet(id);
     console.log(data);
-    const videos = data[0].extended_entities.media[0].video_info.variants;
-    const short_url = data[0].extended_entities.media[0].url;
-    console.log(videos);
-    let maxBitrate = 0;
-    let video_url = '';
-    for (const video of videos) {
-      if (video.content_type === 'video/mp4' && video.bitrate && video.bitrate > maxBitrate) {
-        maxBitrate = video.bitrate;
-        video_url = video.url;
-      } {
-        maxBitrate = video.bitrate;
-        video_url = video.url;
+    if (data[0].extended_entities.media[0].video_info) {
+      const videos = data[0].extended_entities.media[0].video_info.variants;
+      const short_url = data[0].extended_entities.media[0].url;
+      console.log(videos);
+      let maxBitrate = 0;
+      let video_url = '';
+      for (const video of videos) {
+        if (video.content_type === 'video/mp4' && video.bitrate && video.bitrate > maxBitrate) {
+          maxBitrate = video.bitrate;
+          video_url = video.url;
+        } {
+          maxBitrate = video.bitrate;
+          video_url = video.url;
+        }
       }
+      console.log(video_url);
+      const json_response = {
+      video_url: video_url,
+      short_url: short_url 
+      };
+      return new JsResponse(JSON.stringify(json_response));
+    } else {
+      console.log("no es video");
+      return new JsResponse(JSON.stringify({ video_url: "No es un video" }));
     }
-    console.log(video_url);
-    const json_response = {
-     video_url: video_url,
-     short_url: short_url 
-    };
-    return new JsResponse(JSON.stringify(json_response));
   } else {
     console.log("no es link de twitter");
     return new JsResponse("Url no válida");
