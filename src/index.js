@@ -1247,67 +1247,88 @@ console.log(select_data);
 });
 
 router.get("/dc/instagram-video-scrapper?", async (req, env) => {
-  const { query } = req;
-  const _cookie = env.ig_cookie;
-  const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-  const _xIgAppId = '936619743392459';
-  const url = decodeURIComponent(query.url);
-  const getInstagramId = (url) => {
-    const regex = /instagram.com\/(?:p|reels|reel)\/([A-Za-z0-9-_]+)/;
-    const match = url.match(regex);
-    console.log(match);
-    if (match && match[1]) {
-        return match[1];
-    } else {
-        return null;
+  let count = 0;
+  let maxTries = 3;
+  const scrap = async () => {
+    const { query } = req;
+    const _cookie = env.ig_cookie;
+    const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+    const _xIgAppId = '936619743392459';
+    const url = decodeURIComponent(query.url);
+    const getInstagramId = (url) => {
+      const regex = /instagram.com\/(?:p|reels|reel)\/([A-Za-z0-9-_]+)/;
+      const match = url.match(regex);
+      console.log(match);
+      if (match && match[1]) {
+          return match[1];
+      } else {
+          return null;
+        }
     }
-}
 
-const idUrl = getInstagramId(url);
+    const idUrl = getInstagramId(url);
 
-if (!idUrl) {
-  console.log('Invalid url');
-  return new JsResponse("Url no válida");
-} else {
-  const response = await fetch(`https://www.instagram.com/p/${idUrl}/`, {
-      headers: {
-          "cookie": _cookie,
-          "user-agent": _userAgent,
-          "x-ig-app-id": _xIgAppId,
-          ['sec-fetch-site']: 'same-origin'
-      }
-  });
-  const html = await response.text();
-  const body = cheerio.load(html);
-  const scripts = [];
-  body('script').each((i, el) => {
-      const script = body(el).html();
-      if (script.includes('"items"')) {
-          scripts.push(script);
-
-      }
-  });
-
-  const json = JSON.parse(scripts).require;
-  const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
-  let video_url;
-  console.log(items.video_versions);
-  if (items.video_versions){
-    if (items.video_versions[0].height <= 720) {
-        video_url = items.video_versions[0].url;
+    if (!idUrl) {
+      console.log('Invalid url');
+      return new JsResponse("Url no válida");
     } else {
-        video_url = items.video_versions[1].url;
+      const response = await fetch(`https://www.instagram.com/p/${idUrl}/`, {
+          headers: {
+              "cookie": _cookie,
+              "user-agent": _userAgent,
+              "x-ig-app-id": _xIgAppId,
+              ['sec-fetch-site']: 'same-origin'
+          }
+      });
+      const html = await response.text();
+      const body = cheerio.load(html);
+      const scripts = [];
+      body('script').each((i, el) => {
+          const script = body(el).html();
+          if (script.includes('"items"')) {
+              scripts.push(script);
+
+          }
+      });
+
+      const json = JSON.parse(scripts).require;
+      const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
+      let video_url;
+      console.log(items.video_versions);
+      if (items.video_versions){
+        if (items.video_versions[0].height <= 720) {
+            video_url = items.video_versions[0].url;
+        } else {
+            video_url = items.video_versions[1].url;
+        }
+      } else {
+        video_url = "No es video";
+      }
+      console.log(video_url);
+      const json_response = {
+        video_url: video_url,
+        short_url: url.replace(/\?.*$/, "").replace("www.","")
+      };
+      return new JsResponse(JSON.stringify(json_response));
     }
-  } else {
-    video_url = "No es video";
   }
-  console.log(video_url);
-  const json_response = {
-    video_url: video_url,
-    short_url: url.replace(/\?.*$/, "").replace("www.","")
-   };
-  return new JsResponse(JSON.stringify(json_response));
-}
+
+  const retryScrap = async () => {
+    try {
+    await scrap();
+    }
+    catch (error) {
+      console.log(error);
+      if (count < maxTries) {
+        count++;
+        await retryScrap();
+      } else {
+        return new JsResponse("Error al obtener el video");
+      }
+    }
+  };
+
+  retryScrap();
 });
 
 router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
