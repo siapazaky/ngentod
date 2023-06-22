@@ -1294,7 +1294,13 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       const json = JSON.parse(scripts).require;
       const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
       let video_url;
-      console.log(items.video_versions);
+      let caption
+      if (items.caption) {
+        caption = items.caption.text;
+      } else {
+        caption = "";
+      }
+      console.log(items);
       if (items.video_versions){
         if (items.video_versions[0].height <= 720) {
             video_url = items.video_versions[0].url;
@@ -1307,7 +1313,8 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       console.log(video_url);
       const json_response = {
         video_url: video_url,
-        short_url: url.replace(/\?.*$/, "").replace("www.","")
+        short_url: url.replace(/\?.*$/, "").replace("www.",""),
+        caption: caption
       };
       return JSON.stringify(json_response);
     }
@@ -1315,7 +1322,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
 
   const retryScrap = async () => {
     try {
-    return await scrap();
+    return scrap();
     }
     catch (error) {
       console.log(error);
@@ -1352,10 +1359,12 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
     const response = await fetch(`https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
     const data = await response.json();
     const video_url = data.aweme_list[0].video.play_addr.url_list[0];
+    const caption = data.aweme_list[0].desc;
     console.log(video_url);
     const json_response = {
       video_url: video_url,
-      short_url: url.replace(/\?.*$/, "").replace("www.","")
+      short_url: "https://m.tiktok.com/v/"+ tt_id,
+      caption: caption
      };
     return new JsResponse(JSON.stringify(json_response));
   } else {
@@ -1376,9 +1385,10 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
     if (data[0].extended_entities.media[0].video_info) {
       const videos = data[0].extended_entities.media[0].video_info.variants;
       const short_url = data[0].extended_entities.media[0].url;
+      const caption = data[0].text.replace(/https:\/\/t\.co\/\w+/g, "").trim()
       console.log(videos);
       let maxBitrate = 0;
-      let video_url = '';
+      let video_url = "";
       for (const video of videos) {
         if (video.content_type === 'video/mp4' && video.bitrate && video.bitrate > maxBitrate) {
           maxBitrate = video.bitrate;
@@ -1391,7 +1401,8 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
       console.log(video_url);
       const json_response = {
       video_url: video_url,
-      short_url: short_url 
+      short_url: short_url,
+      caption: caption 
       };
       return new JsResponse(JSON.stringify(json_response));
     } else {
