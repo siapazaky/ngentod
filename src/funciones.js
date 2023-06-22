@@ -61,7 +61,7 @@ export const generateUniqueId = () => {
 
 // Solo toma encuenta si el ID se encuentra en el slash final y no en un query
 export const obtenerIDDesdeURL = (url) => {
-  const expresionRegular = /\/([a-zA-Z0-9_-]+)(?:\.[a-zA-Z0-9]+)?(?:\?|$|\/$)/;
+  const expresionRegular = /\/([a-zA-Z0-9_-]+)(?:\.[a-zA-Z0-9]+)?(?:\?|$|\/\?|\/$)/;
   const resultado = expresionRegular.exec(url);
   if (resultado && resultado.length > 1) {
     return resultado[1];
