@@ -1270,7 +1270,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
 
     if (!idUrl) {
       console.log('Invalid url');
-      return new JsResponse("Url no válida");
+      return "Url no válida";
     } else {
       const response = await fetch(`https://www.instagram.com/p/${idUrl}/`, {
           headers: {
@@ -1309,26 +1309,26 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
         video_url: video_url,
         short_url: url.replace(/\?.*$/, "").replace("www.","")
       };
-      return new JsResponse(JSON.stringify(json_response));
+      return JSON.stringify(json_response);
     }
   }
 
   const retryScrap = async () => {
     try {
-    await scrap();
+    return await scrap();
     }
     catch (error) {
       console.log(error);
       if (count < maxTries) {
         count++;
-        await retryScrap();
+        return await retryScrap();
       } else {
-        return new JsResponse("Error al obtener el video");
+        return "Máximo de intentos alcanzados";
       }
     }
   };
-
-  retryScrap();
+  
+  return new JsResponse(await retryScrap());
 });
 
 router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
