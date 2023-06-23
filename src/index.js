@@ -499,7 +499,8 @@ router.get("/dc/ai/:user/:prompt", async (req, env) => {
   history = history.substring(0, history.length - 5);
   console.log(history);
   let context = history.replaceAll(/-SEP-/g,",").replace("[","").replace("]","");
-  context = "["+context+`,{"role": "user", "content": "Qué opinas de los Sudafricanos?"},{"role": "assistant", "content": "En mi opinión, son personas muy trabajadoras y amables."}]`;
+  context = "["+context+"]";
+  console.log(context)
   context = context.replace(/\\/g,"\\\\");
   context = JSON.parse(context);
   console.log(context);
