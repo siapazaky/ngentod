@@ -1357,7 +1357,7 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
     const json = JSON.parse(scripts).ItemModule;
     const tt_id = jp.query(json, "$..[?(@.id)].id")[0];
     console.log(tt_id);
-    const response = await fetch(`https://api16-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
+    const response = await fetch(`https://api.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
     const data = await response.json();
     const video_url = data.aweme_list[0].video.play_addr.url_list[0];
     const caption = data.aweme_list[0].desc;
