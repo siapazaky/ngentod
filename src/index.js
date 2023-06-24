@@ -563,7 +563,7 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
     let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
       if (imgur_user == users_keys.key) {
         const { access_token } = await imgur.RefreshToken(users_keys.value);
-        const respuesta = await imgur.UploadImage(access_token, prompt, openai_b64);
+        const respuesta = await imgur.UploadImage(access_token, prompt, openai_b64, "AI DALL-E");
         const imgurl = respuesta.data.link;
         return imgurl;
       }
@@ -1227,8 +1227,8 @@ router.get("/imgur/me/gallery", async (req, env) => {
 
 router.get("/d1/insert-imgurdiscord?", async (req, env) => {
   const { query } = req;
-  if (query.imgurId && query.discordUser && query.title && query.timestamp) {
-    const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser, title, timestamp) values ('${query.imgurId}', '${query.discordUser}','${query.title}', '${query.timestamp}')`);
+  if (query.imgurId && query.discordUser && query.title && query.timestamp && query.command) {
+    const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser, title, timestamp, command) values ('${query.imgurId}', '${query.discordUser}','${query.title}', '${query.timestamp}', '${query.command}')`);
     const data = await insertar.first();
     return new JsResponse(data);
   } else {
@@ -1360,7 +1360,7 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
     const response = await fetch(`https://api.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
     const data = await response.json();
     const video_url = data.aweme_list[0].video.play_addr.url_list[0];
-    const caption = data.aweme_list[0].desc;
+    const caption = (data.aweme_list[0].desc).trim().replace(/\s+$/, "");
     console.log(video_url);
     const json_response = {
       video_url: video_url,
@@ -1394,9 +1394,6 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
         if (video.content_type === 'video/mp4' && video.bitrate && video.bitrate > maxBitrate) {
           maxBitrate = video.bitrate;
           video_url = video.url;
-        } {
-          maxBitrate = video.bitrate;
-          video_url = video.url;
         }
       }
       console.log(video_url);
@@ -1414,6 +1411,100 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
     console.log("no es link de twitter");
     return new JsResponse("Url no válida");
   }
+});
+
+router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
+  const { query } = req;
+  const key = env.stable_diffusion_token;
+  const prompt = decodeURIComponent(query.prompt);
+  let nsfw_checker = decodeURIComponent(query.nsfw_check);
+  if (nsfw_checker == "0") {
+    nsfw_checker = "no";
+  } else {
+    nsfw_checker = "yes";
+  }
+  const apiFetch = async () => {
+    const apiUrl = "https://stablediffusionapi.com/api/v3/dreambooth";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify({
+        "key": key,
+        "model_id": "anything-v5",
+        "prompt": prompt,
+        "negative_prompt": "painting, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, deformed, ugly, blurry, bad anatomy, bad proportions, extra limbs, cloned face, skinny, glitchy, double torso, extra arms, extra hands, mangled fingers, missing lips, ugly face, distorted face, extra legs",
+        "width": "768",
+        "height": "768",
+        "samples": "1",
+        "num_inference_steps": "30",
+        "seed": null,
+        "guidance_scale": "7.5",
+        "safety_checker": nsfw_checker,
+        "multi_lingual": "yes",
+        "webhook": null,
+        "track_id": null
+      })
+    }
+    const response = await fetch(apiUrl, options);
+    const data = await response.json();
+    console.log("Primer fetch");
+    return await data;
+  };
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  const fetched = await apiFetch();
+  const id = String(fetched.id);
+  console.log(fetched);
+  const comprobarFetch = async (fetched) => {
+    if (fetched.status === "success" || fetched.status === "error"){
+      if (fetched.status === "success") {
+        const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
+        const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+        const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+        const imgur_user = "imgur_ahmedrangel";
+        let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
+          if (imgur_user == users_keys.key) {
+            const { access_token } = await imgur.RefreshToken(users_keys.value);
+            const respuesta = await imgur.UploadImage(access_token, prompt, fetched.output[0], "Stable Diffusion: Anything v5");
+            const imgurl = respuesta.data.link;
+            console.log(imgurl);
+            return imgurl;
+          }
+        })))).filter(users_keys => users_keys);
+        console.log("subido a imgur");
+        return {output: [imgur_url]};
+      } else {
+        console.log("error");
+        return {output: ["error"]};
+      }
+    } else {
+      console.log("refetcheando");
+      await delay(5000);
+      const apiUrl = `https://stablediffusionapi.com/api/v3/dreambooth/fetch/${id}`;
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify({
+          "key": key,
+          "request_id": id
+        }),
+        redirect: "follow"
+      }
+      const response = await fetch(apiUrl, options);
+      const data = await response.json();
+      console.log(data);
+      return await comprobarFetch(data);
+    }
+  }
+  const response = await comprobarFetch(fetched);
+  return new JsResponse(response.output[0]);
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
