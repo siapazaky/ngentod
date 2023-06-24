@@ -1424,7 +1424,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     nsfw_checker = "yes";
   }
   const apiFetch = async () => {
-    const apiUrl = "https://stablediffusionapi.com/api/v3/dreambooth";
+    const apiUrl = "https://stablediffusionapi.com/api/v4/dreambooth";
     const options = {
       method: "POST",
       headers: {
@@ -1435,8 +1435,8 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
         "model_id": "anything-v5",
         "prompt": prompt,
         "negative_prompt": "painting, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, deformed, ugly, blurry, bad anatomy, bad proportions, extra limbs, cloned face, skinny, glitchy, double torso, extra arms, extra hands, mangled fingers, missing lips, ugly face, distorted face, extra legs",
-        "width": "768",
-        "height": "768",
+        "width": "816",
+        "height": "816",
         "samples": "1",
         "num_inference_steps": "30",
         "seed": null,
@@ -1470,7 +1470,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
         let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
           if (imgur_user == users_keys.key) {
             const { access_token } = await imgur.RefreshToken(users_keys.value);
-            const respuesta = await imgur.UploadImage(access_token, prompt, fetched.output[0], "Stable Diffusion: Anything v5");
+            const respuesta = await imgur.UploadImage(access_token, prompt, fetched.output[0], "Stable Diffusion: Anything-v5");
             const imgurl = respuesta.data.link;
             console.log(imgurl);
             return imgurl;
@@ -1484,8 +1484,8 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
       }
     } else {
       console.log("refetcheando");
-      await delay(5000);
-      const apiUrl = `https://stablediffusionapi.com/api/v3/dreambooth/fetch/${id}`;
+      await delay(2000);
+      const apiUrl = `https://stablediffusionapi.com/api/v4/dreambooth/fetch/${id}`;
       const options = {
         method: "POST",
         headers: {
