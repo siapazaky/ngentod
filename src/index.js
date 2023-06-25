@@ -1438,6 +1438,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
         "width": "816",
         "height": "816",
         "samples": "1",
+        "enhance_prompt": "no",
         "num_inference_steps": "30",
         "seed": null,
         "guidance_scale": "7.5",
