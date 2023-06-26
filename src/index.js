@@ -1457,7 +1457,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
         "key": key,
         "model_id": "anything-v5",
         "prompt": translatedPrompt.replace(/black/gi, "dark") + extra_prompt,
-        "negative_prompt": "boring, bad art, (extra fingers), out of frame, mutated hands, poorly drawn hands, poorly drawn face, deformed, disfigured, ugly, blurry, bad anatomy, bad proportions, ((extra limbs)), cloned face, skinny, glitchy, double torso, ((extra arms)), ((extra hands)), mangled fingers, missing lips, ugly face, distorted face, extra legs, watermark" + extra_negative_prompt,
+        "negative_prompt": "boring, bad art, (extra fingers), out of frame, mutated hands, poorly drawn hands, poorly drawn face, deformed, disfigured, ugly, blurry, bad anatomy, bad proportions, ((extra limbs)), cloned face, skinny, glitchy, (double torso), (double body), ((extra arms)), ((extra hands)), mangled fingers, missing lips, ugly face, distorted face, extra legs, watermark" + extra_negative_prompt,
         "width": "816",
         "height": "816",
         "samples": "1",
