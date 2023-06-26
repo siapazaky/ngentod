@@ -1418,13 +1418,36 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
   const key = env.stable_diffusion_token;
   const prompt = decodeURIComponent(query.prompt);
   let nsfw_checker = decodeURIComponent(query.nsfw_check);
+  let extra_prompt;
+  let extra_negative_prompt;
   if (nsfw_checker == "0") {
     nsfw_checker = "no";
+    extra_prompt = "";
   } else {
     nsfw_checker = "yes";
+    extra_prompt = ", highly detailed, f/1.4, ISO 200, 1/160s, 8K";
+    extra_negative_prompt = ", (((NSFW))), ((unclothed))";
   }
+  const configuration = new Configuration({
+    apiKey: env.openai_token,
+  });
+  const openai = new OpenAIApi(configuration);
+  const IA = async() => {
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `Translate this words into 1. English\n${prompt.replace(/black/gi, "dark")}\n1. `,
+      temperature: 0.6,
+      max_tokens: 256,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    });
+    return response.data.choices[0].text;
+  }
+  const translatedPrompt = await IA();
+
   const apiFetch = async () => {
-    const apiUrl = "https://stablediffusionapi.com/api/v4/dreambooth";
+    const apiUrl = "https://stablediffusionapi.com/api/v3/dreambooth";
     const options = {
       method: "POST",
       headers: {
@@ -1433,8 +1456,8 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
       body: JSON.stringify({
         "key": key,
         "model_id": "anything-v5",
-        "prompt": prompt,
-        "negative_prompt": "painting, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, deformed, ugly, blurry, bad anatomy, bad proportions, extra limbs, cloned face, skinny, glitchy, double torso, extra arms, extra hands, mangled fingers, missing lips, ugly face, distorted face, extra legs",
+        "prompt": translatedPrompt.replace(/black/gi, "dark") + extra_prompt,
+        "negative_prompt": "boring, bad art, (extra fingers), out of frame, mutated hands, poorly drawn hands, poorly drawn face, deformed, disfigured, ugly, blurry, bad anatomy, bad proportions, ((extra limbs)), cloned face, skinny, glitchy, double torso, ((extra arms)), ((extra hands)), mangled fingers, missing lips, ugly face, distorted face, extra legs, watermark" + extra_negative_prompt,
         "width": "816",
         "height": "816",
         "samples": "1",
@@ -1442,7 +1465,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
         "num_inference_steps": "30",
         "seed": null,
         "guidance_scale": "7.5",
-        "safety_checker": nsfw_checker,
+        "safety_checker": "no",
         "multi_lingual": "yes",
         "webhook": null,
         "track_id": null
@@ -1486,7 +1509,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     } else {
       console.log("refetcheando");
       await delay(2000);
-      const apiUrl = `https://stablediffusionapi.com/api/v4/dreambooth/fetch/${id}`;
+      const apiUrl = `https://stablediffusionapi.com/api/v3/dreambooth/fetch/${id}`;
       const options = {
         method: "POST",
         headers: {
