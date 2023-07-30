@@ -1273,7 +1273,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       console.log('Invalid url');
       return "Url no válida";
     } else {
-      const response = await fetch(`https://www.instagram.com/p/${idUrl}/`, {
+      const response = await fetch(`https://www.instagram.com/p/${idUrl}?__a=1&__d=di`, {
           headers: {
               "cookie": _cookie,
               "user-agent": _userAgent,
@@ -1281,19 +1281,8 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
               ['sec-fetch-site']: 'same-origin'
           }
       });
-      const html = await response.text();
-      const body = cheerio.load(html);
-      const scripts = [];
-      body('script').each((i, el) => {
-          const script = body(el).html();
-          if (script.includes('"items"')) {
-              scripts.push(script);
-
-          }
-      });
-
-      const json = JSON.parse(scripts).require;
-      const items = jp.query(json, "$..[?(@.items)].items[0]")[0];
+      const json = await response.json();
+      const items = json.items[0];
       let video_url;
       let caption
       if (items.caption) {
@@ -1318,6 +1307,91 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
         caption: caption
       };
       return JSON.stringify(json_response);
+    }
+  }
+
+  const retryScrap = async () => {
+    try {
+    return scrap();
+    }
+    catch (error) {
+      console.log(error);
+      if (count < maxTries) {
+        count++;
+        return await retryScrap();
+      } else {
+        return "Máximo de intentos alcanzados";
+      }
+    }
+  };
+  
+  return new JsResponse(await retryScrap());
+});
+
+router.get("/dc/facebook-video-scrapper?", async (req, env) => {
+  let count = 0;
+  let maxTries = 3;
+  const scrap = async () => {
+    const { query } = req;
+    const _cookie = env.fb_cookie;
+    const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+    const url = decodeURIComponent(query.url);
+    const dataFetch = async (URL) => {
+      const response = await fetch(URL, {
+        headers: {
+          "cookie": _cookie,
+          "user-agent": _userAgent,
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+          "sec-fetch-dest": "document",
+          "sec-fetch-site": "none",
+          "sec-fetch-user": "?1",
+          "sec-fetch-mode": "navigate",
+          "upgrade-insecure-requests": "1",
+          "authority": "www.facebook.com"
+        }
+      });
+      const html = await response.text();
+      const body = cheerio.load(html);
+      const scripts = [];
+      body('script').each((i, el) => {
+        const script = body(el).html();
+        if (script.includes("VideoPlayerShakaPerformanceLoggerConfig") || script.includes("CometFeedStoryDefaultMessageRenderingStrategy")) {
+            scripts.push(script);
+        }
+      });
+      const json_media = JSON.parse(scripts[0]).require[0];
+      const json_text = JSON.parse(scripts[1]).require[0]
+      let data;
+      let caption;
+      json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
+        if (el[0] == "RelayPrefetchedStreamCache") {
+          const step1 = el[el.length - 1];
+          caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text.replaceAll(/\n\n/g, "\n");
+        }
+      });
+      json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
+        if (el[0] == "RelayPrefetchedStreamCache") {
+          const step1 = el[el.length - 1];
+          const step2 = step1[step1.length - 1]?.__bbox?.result?.data?.video?.story?.attachments[0]?.media;
+          data = step2;
+        }
+      });
+      const json_object = {
+        short_url: "https://facebook.com/watch/?v=" + data?.id,
+        video_url: data?.browser_native_hd_url,
+        caption: caption
+      }
+      return JSON.stringify(json_object);
+    }
+
+    if (url.includes("facebook.com/watch") || url.includes("fb.watch/")) {
+      return await dataFetch(url);
+    } else if (url.includes("facebook.com/reel") || url.includes ("/videos/")) {
+      const id = obtenerIDDesdeURL(url);
+      return await dataFetch("https://www.facebook.com/watch/?v=" + id);
+    } else {
+      console.log('Invalid url');
+      return "Url no válida";
     }
   }
 
@@ -1529,6 +1603,31 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
   }
   const response = await comprobarFetch(fetched);
   return new JsResponse(response.output[0]);
+});
+
+router.get("/dc/kick-live?", async (req, env) => {
+  const { query } = req;
+  const channel = query.channel;
+  const check = query.check;
+  const status = Number(await env.KICK_LIVE_CHECK.get(channel));
+  console.log(channel + "-" + check + "-" + status);
+  let response;
+  if (check == 1 && status == 0) {
+    await env.KICK_LIVE_CHECK.put(channel, 1, {metadata: {value: 1},});
+    console.log("Está en vivo, se hace put 1 en KV");
+    response = {notificar: true};
+  } else if (check == 1 && status == 1) {
+    console.log("Está en vivo, ya hay 1 en KV, no se hace put");
+    response = {notificar: false};
+  } else if (check == 0 && status == 0) {
+    console.log("No está en vivo, ya hay 0 en KV, no se hace put");
+    response = {notificar: false};
+  } else if (check == 0 && status == 1) {
+    await env.KICK_LIVE_CHECK.put(channel, 0, {metadata: {value: 0},});
+    console.log("No está en vivo, hay 1 en KV, se hace put 0 en KV");
+    response = {notificar: false};
+  }
+  return new JsResponse(JSON.stringify(response));
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
