@@ -1336,7 +1336,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
     const _cookie = env.fb_cookie;
     const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
     const url = decodeURIComponent(query.url);
-    const dataFetch = async (URL) => {
+    const dataFetch = async (URL, is_reel) => {
       const response = await fetch(URL, {
         headers: {
           "cookie": _cookie,
@@ -1353,42 +1353,70 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
       const html = await response.text();
       const body = cheerio.load(html);
       const scripts = [];
-      body('script').each((i, el) => {
-        const script = body(el).html();
-        if (script.includes("VideoPlayerShakaPerformanceLoggerConfig") || script.includes("CometFeedStoryDefaultMessageRenderingStrategy")) {
-            scripts.push(script);
+      if (is_reel == false) {
+        body('script').each((i, el) => {
+          const script = body(el).html();
+          if (script.includes("VideoPlayerShakaPerformanceLoggerConfig") || script.includes("CometFeedStoryDefaultMessageRenderingStrategy")) {
+              scripts.push(script);
+          }
+        });
+        const json_media = JSON.parse(scripts[0]).require[0];
+        const json_text = JSON.parse(scripts[1]).require[0]
+        let data;
+        let caption;
+        json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
+          if (el[0] == "RelayPrefetchedStreamCache") {
+            const step1 = el[el.length - 1];
+            caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text.replaceAll(/\n\n/g, "\n");
+          }
+        });
+        json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
+          if (el[0] == "RelayPrefetchedStreamCache") {
+            const step1 = el[el.length - 1];
+            const step2 = step1[step1.length - 1]?.__bbox?.result?.data?.video?.story?.attachments[0]?.media;
+            data = step2;
+          }
+        });
+        const json_object = {
+          short_url: "https://facebook.com/watch/?v=" + data?.id,
+          video_url: data?.browser_native_hd_url,
+          caption: caption
         }
-      });
-      const json_media = JSON.parse(scripts[0]).require[0];
-      const json_text = JSON.parse(scripts[1]).require[0]
-      let data;
-      let caption;
-      json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
-        if (el[0] == "RelayPrefetchedStreamCache") {
-          const step1 = el[el.length - 1];
-          caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text.replaceAll(/\n\n/g, "\n");
+        return JSON.stringify(json_object);
+      } else {
+        body('script').each((i, el) => {
+          const script = body(el).html();
+          if (script.includes("VideoPlayerShakaPerformanceLoggerConfig")) {
+              scripts.push(script);
+          }
+        });
+        const json_media = JSON.parse(scripts[0]).require[0];
+        let data;
+        let caption;
+        json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
+          if (el[0] == "RelayPrefetchedStreamCache") {
+            const step1 = el[el.length - 1];
+            const step2 = step1[step1.length - 1]?.__bbox?.result?.data?.video?.creation_story;
+            data = step2.short_form_video_context;
+            caption = step2.message.text;
+          }
+        });
+        const json_object = {
+          short_url: data?.shareable_url.replace("www.",""),
+          video_url: data?.playback_video.browser_native_hd_url,
+          caption: caption
         }
-      });
-      json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
-        if (el[0] == "RelayPrefetchedStreamCache") {
-          const step1 = el[el.length - 1];
-          const step2 = step1[step1.length - 1]?.__bbox?.result?.data?.video?.story?.attachments[0]?.media;
-          data = step2;
-        }
-      });
-      const json_object = {
-        short_url: "https://facebook.com/watch/?v=" + data?.id,
-        video_url: data?.browser_native_hd_url,
-        caption: caption
+        return JSON.stringify(json_object);
       }
-      return JSON.stringify(json_object);
     }
 
     if (url.includes("facebook.com/watch") || url.includes("fb.watch/")) {
-      return await dataFetch(url);
-    } else if (url.includes("facebook.com/reel") || url.includes ("/videos/")) {
+      return await dataFetch(url, false);
+    } else if (url.includes ("/videos/")) {
       const id = obtenerIDDesdeURL(url);
-      return await dataFetch("https://www.facebook.com/watch/?v=" + id);
+      return await dataFetch("https://www.facebook.com/watch/?v=" + id, false);
+    } else if (url.includes("facebook.com/reel")) {
+      return await dataFetch(url, true);
     } else {
       console.log('Invalid url');
       return "Url no válida";
