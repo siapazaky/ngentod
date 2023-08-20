@@ -1105,8 +1105,10 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       profile_data = {status_code: 200, summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase(), titleName: titleName};
       const ranked_data = await riot.RankedData(summoner_id, region_route);
       ranked_data.forEach((rankedData) => {
-        const tier = riot.tierCase(rankedData.tier).full.toUpperCase();
-        rank_profile.push({leagueId: rankedData.leagueId, queueType: rankedData.queueType, tier: tier, rank: rankedData.rank, leaguePoints: rankedData.leaguePoints, wins: rankedData.wins, losses: rankedData.losses});
+        if (rankedData.queueType !== "CHERRY") {
+          const tier = riot.tierCase(rankedData.tier).full.toUpperCase();
+          rank_profile.push({leagueId: rankedData.leagueId, queueType: rankedData.queueType, tier: tier, rank: rankedData.rank, leaguePoints: rankedData.leaguePoints, wins: rankedData.wins, losses: rankedData.losses});
+        }
       });
       const queue_sort_first = "RANKED_SOLO_5x5";
       const queue_sort_second = "RANKED_FLEX_SR";
@@ -1116,7 +1118,6 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
         if (solo === queue_sort_first) {
           return -1;
         }
-        
         if (flex === queue_sort_first) {
           return 1;
         }
@@ -1131,7 +1132,6 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
         return 0;
       });
       profile_data.rankProfile = rank_profile;
-      
       const count = 10;
       const regional_routing = riot.RegionalRouting(region);
       console.log(regional_routing);

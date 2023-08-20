@@ -234,6 +234,11 @@ class riotApi {
         queue.queue = "ARURF";
         queue.full_name = "ARURF";
         break;
+      case 1700:
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue = "ARENA";
+        queue.full_name = "Arena";
+        break;
       default: 
         queue.profile_rank_type = "RANKED_SOLO_5x5";
         queue.queue = "";
