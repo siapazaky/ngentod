@@ -229,6 +229,11 @@ class riotApi {
         queue.queue_name = "CLASH";
         queue.full_name = "Clash";
         break;
+      case 720:
+        queue.profile_rank_type = "RANKED_SOLO_5x5";
+        queue.queue_name = "ARAM CLASH";
+        queue.full_name = "ARAM Clash";
+        break;
       case 900:
         queue.profile_rank_type = "RANKED_SOLO_5x5";
         queue.queue = "ARURF";
