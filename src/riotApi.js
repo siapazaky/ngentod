@@ -135,6 +135,10 @@ class riotApi {
         tier.short = "P";
         tier.full = "Platino";
         break;
+      case "EMERALD":
+        tier.short = "E";
+        tier.full = "Esmeralda";
+        break;
       case "DIAMOND":
         tier.short = "D";
         tier.full = "Diamante";
