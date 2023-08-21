@@ -1494,7 +1494,6 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
         "X-Twitter-Active-User": "yes",
         "X-Twitter-Auth-Type": "OAuth2Session",
         "X-Twitter-Client-Language": "en",
-        "X-Client-Transaction-Id": "pNCqbR2EjYW5/r3VG0p1jG7jCJNh04Fj/3PbI+J6hpHCEUV0D/sAxJtgRLLO1adcqfZ+N6SMGOKSwnfm6HbWb2GKrlnZpQ",
         "X-Csrf-Token": "0144e92ab3ad369187f2103484b8feec2d908204fdd66c97d891c468e07f7a57f2ced9f28b923d2e884f4854bf0d9b2accc07444d50a5d35b0e1afbb9bf563b926e5310e13dd28a34c098d6e3169a402"
       }
     })
