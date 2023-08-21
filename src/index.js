@@ -1253,7 +1253,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
   const scrap = async () => {
     const { query } = req;
     const _cookie = env.ig_cookie;
-    const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+    const _userAgent = env.user_agent;
     const _xIgAppId = '936619743392459';
     const url = decodeURIComponent(query.url);
     const getInstagramId = (url) => {
@@ -1479,16 +1479,32 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
 router.get("/dc/twitter-video-scrapper?", async (req, env) => {
   const { query } = req;
   const url = decodeURIComponent(query.url);
+  const graphql = "https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g"
   if (url.includes("twitter.com/")) {
     console.log("es link de twitter");
     const id = obtenerIDDesdeURL(url);
-    const twitter = new twitterApi(env.twitter_bearer_token);
-    const data = await twitter.getTweet(id);
+    const tweetQuery = `TweetDetail?variables={"focalTweetId":"${id}","with_rux_injections":false,"includePromotedContent":true,"withCommunity":true,"withQuickPromoteEligibilityTweetFields":true,"withBirdwatchNotes":true,"withVoice":true,"withV2Timeline":true}&features={"rweb_lists_timeline_redesign_enabled":true,"responsive_web_graphql_exclude_directive_enabled":true,"verified_phone_label_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"tweetypie_unmention_optimization_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"responsive_web_twitter_article_tweet_consumption_enabled":false,"tweet_awards_web_tipping_enabled":false,"freedom_of_speech_not_reach_fetch_enabled":true,"standardized_nudges_misinfo":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_media_download_video_enabled":false,"responsive_web_enhance_cards_enabled":false}&fieldToggles={"withArticleRichContentState":false}`;
+    const eTweetQuery = encodeURI(tweetQuery);
+    const fetchTweet = await fetch(`${graphql}/${eTweetQuery}`, {
+      headers: {
+        "cookie": env.x_cookie,
+        "user-agent": env.user_agent,
+        ["sec-fetch-site"]: "same-origin",
+        "Authorization": `Bearer ${env.twitter_bearer_token}`,
+        "X-Twitter-Active-User": "yes",
+        "X-Twitter-Auth-Type": "OAuth2Session",
+        "X-Twitter-Client-Language": "en",
+        "X-Client-Transaction-Id": "pNCqbR2EjYW5/r3VG0p1jG7jCJNh04Fj/3PbI+J6hpHCEUV0D/sAxJtgRLLO1adcqfZ+N6SMGOKSwnfm6HbWb2GKrlnZpQ",
+        "X-Csrf-Token": "0144e92ab3ad369187f2103484b8feec2d908204fdd66c97d891c468e07f7a57f2ced9f28b923d2e884f4854bf0d9b2accc07444d50a5d35b0e1afbb9bf563b926e5310e13dd28a34c098d6e3169a402"
+      }
+    })
+    const result = await fetchTweet.json();
+    const data = result.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy
     console.log(data);
-    if (data[0].extended_entities.media[0].video_info) {
-      const videos = data[0].extended_entities.media[0].video_info.variants;
-      const short_url = data[0].extended_entities.media[0].url;
-      const caption = data[0].text.replace(/https:\/\/t\.co\/\w+/g, "").trim()
+    if (data.extended_entities.media[0].video_info) {
+      const videos = data.extended_entities.media[0].video_info.variants;
+      const short_url = data.extended_entities.media[0].url;
+      const caption = data.full_text.replace(/https:\/\/t\.co\/\w+/g, "").trim()
       console.log(videos);
       let maxBitrate = 0;
       let video_url = "";
