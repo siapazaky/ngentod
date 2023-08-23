@@ -1170,6 +1170,33 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
   return new Response(JSON.stringify(profile_data));
 });
 
+router.get("/rank?", async (req, env,) => {
+  const { query } = req;
+  const lol = query.lol;
+  const val = encodeURIComponent(query.val);
+  console.log(val);
+  const region = "la2"
+  const riot = new riotApi(env.riot_token);
+  const { id } = await riot.SummonerDataByName(lol, region);
+  const rankedData = await riot.RankedData(id, region);
+  let lolRank;
+  for (const el of rankedData) {
+    if (el.queueType == "RANKED_SOLO_5x5") {
+      lolRank = `${riot.tierCase(el.tier).full} ${riot.rankCase(el.rank)}`;
+      break;
+    } else {
+      lolRank = `Unranked`;
+      break;
+    }
+  };
+  const valFetch = await fetch("https://trackergg-scraper.ahmedrangel.repl.co/val-track?user=" + val);
+  const valData = await valFetch.text();
+  console.log(valData);
+  const valRankStrings = valData.split(" ");
+  const valRank = `${riot.tierCase(valRankStrings[0].toUpperCase()).full} ${valRankStrings[1]}`;
+  return new Response(`LoL: ${lolRank} | Valo: ${valRank}`);
+});
+
 router.get("/imgur/auth", async (req, env) => {
   const dest = new URL("https://api.imgur.com/oauth2/authorize?"); // destination
   dest.searchParams.append("client_id", env.imgur_client_id);
