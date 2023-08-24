@@ -1,12 +1,12 @@
 class twitchApi {
 
   constructor(client_id, client_secret) {
-    this.client_id =  client_id;
+    this.client_id = client_id;
     this.client_secret = client_secret;
     this.grant_type = "client_credentials";
   }
 
-  async getAccessToken() {   
+  async getAccessToken() {
     const oauth_url = "https://id.twitch.tv/oauth2/token";
     const response = await fetch(oauth_url, {
       body: JSON.stringify(this),
@@ -28,12 +28,11 @@ class twitchApi {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
       };
-    
+
       if(!accessToken) {
         console.log("No Token");
         return null;
-      }
-      else {
+      } else {
         const response = await fetch(url, {method: "GET", headers: headers});
         const body = await response.json();
         return body.data[0].display_name;
@@ -51,12 +50,11 @@ class twitchApi {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
       };
-    
+
       if(!accessToken) {
         console.log("No Token");
         return null;
-      }
-      else {
+      } else {
         const response = await fetch(url, {method: "GET", headers: headers});
         const body = await response.json();
         return body.data[0].id;
@@ -73,12 +71,11 @@ class twitchApi {
       "Client-ID": this.client_id,
       "Authorization": "Bearer " + accessToken
     };
-  
+
     if(!accessToken) {
       console.log("No Token");
       return null;
-    }
-    else {
+    } else {
       const response = await fetch(url, {method: "GET", headers: headers});
       const body = await response.json();
       console.log(body.data[0].from_name);
@@ -86,26 +83,25 @@ class twitchApi {
     };
   }
 
-  async getBroadcasterInfo(channel_id) {  
+  async getBroadcasterInfo(channel_id) {
     const accessToken = await this.getAccessToken();
     const url = `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`;
     const headers = {
       "Client-ID": this.client_id,
       "Authorization": "Bearer " + accessToken
     };
-  
+
     if(!accessToken) {
       console.log("No Token");
       return null;
-    }
-    else {
+    } else {
       const response = await fetch(url, {method: "GET", headers: headers});
       const body = await response.json();
       console.log(body.data[0]);
       return body.data[0];
     };
   }
-// user oauth call back for getting user access token, require oauth query code, require redirect uri
+  // user oauth call back for getting user access token, require oauth query code, require redirect uri
   async OauthCallback(query_code, redirect_uri) {
     const oauth_url = `https://id.twitch.tv/oauth2/token?client_id=${this.client_id}&client_secret=${this.client_secret}&code=${query_code}&grant_type=authorization_code&redirect_uri=${redirect_uri}`;
     const response = await fetch(oauth_url, {
@@ -118,8 +114,8 @@ class twitchApi {
     return response;
   }
 
-// token validation
-  async Validate(user_access_token){
+  // token validation
+  async Validate(user_access_token) {
     const validate = "https://id.twitch.tv/oauth2/validate";
     const validation = await fetch(validate, {
       method: "GET",
@@ -131,7 +127,7 @@ class twitchApi {
     return validation;
   }
 
- // refresh user access token 
+  // refresh user access token
   async RefreshToken (refresh_token) {
     const oauth_url = "https://id.twitch.tv/oauth2/token";
     const response = await fetch(oauth_url, {
@@ -151,7 +147,7 @@ class twitchApi {
     const leaderboard = "https://api.twitch.tv/helix/bits/leaderboard?count=20&period=all";
     const top_users = await fetch(leaderboard, {
       method: "GET",
-      headers: { 
+      headers: {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + user_access_token
       }});
@@ -160,14 +156,14 @@ class twitchApi {
 
   }
 
-// Set Stream Tags, require user access token, tags must be an array
+  // Set Stream Tags, require user access token, tags must be an array
   async SetTags (user_access_token, channelID, tags) {
     console.log(tags);
     const manage_stream_url = `https://api.twitch.tv/helix/channels?broadcaster_id=${channelID}`;
     const set_tags = await fetch(manage_stream_url, {
       method: "PATCH",
       headers: {
-        "Accept": "application/json", 
+        "Accept": "application/json",
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + user_access_token,
         "Content-Type": "application/json"
@@ -177,20 +173,20 @@ class twitchApi {
     return set_tags;
   }
 
-// Set Stream Moderator, require user access token
+  // Set Stream Moderator, require user access token
   async AddMod (user_access_token, channel_id, user_id) {
     const manage_stream_url = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
     const add_mod = await fetch(manage_stream_url, {
       method: "POST",
       headers: {
-        "Accept": "application/json", 
+        "Accept": "application/json",
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + user_access_token,
         "Content-Type": "application/json"
       }
     });
     return add_mod;
-  } 
+  }
 
   // Remove Stream Moderator, require user access token
   async UnMod (user_access_token, channel_id, user_id) {
@@ -198,27 +194,45 @@ class twitchApi {
     const unmod = await fetch(manage_stream_url, {
       method: "DELETE",
       headers: {
-        "Accept": "application/json", 
+        "Accept": "application/json",
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + user_access_token,
         "Content-Type": "application/json"
       }
     });
     return unmod;
-  } 
+  }
 
   // Get chatters as mod or broadcaster, require user access token
   async getChatters (user_access_token, channel_id, mod_id) {
     const chatters = `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel_id}&moderator_id=${mod_id}`;
     const response = await fetch(chatters, {
       method: "GET",
-      headers: { 
+      headers: {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + user_access_token
       }});
     const { data } = await response.json();
     return data;
 
+  }
+
+  // Post shoutout, require user access token
+  async ShoutOut (user_access_token, channel_id, to_channel_id) {
+    const shoutou_endpoint = `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${to_channel_id}&moderator_id=${channel_id}`;
+    const shoutout = await fetch(shoutou_endpoint, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Client-ID": this.client_id,
+        "Authorization": "Bearer " + user_access_token,
+        "Content-Type": "application/json"
+      }
+    });
+    if (shoutout.status === 204) {
+      return null;
+    }
+    return await shoutout.json();
   }
 }
 

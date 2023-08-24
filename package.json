@@ -5,13 +5,15 @@
   "private": true,
   "scripts": {
     "start": "wrangler dev",
-    "deploy": "wrangler publish"
+    "deploy": "wrangler publish",
+    "lint": "eslint --ext .ts,.js,.vue --fix --ignore-path .gitignore ."
   },
   "dependencies": {
     "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "buffer": "^6.0.3",
     "cheerio": "^1.0.0-rc.12",
     "detectlanguage": "^2.1.0",
+    "eslint": "^8.47.0",
     "itty-router": "^2.6.6",
     "itty-router-extras": "^0.4.2",
     "jsonpath": "^1.1.1",
