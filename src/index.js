@@ -845,7 +845,6 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
 // Nightbot command: Shoutout
 router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
   const { user, channel_id, touser } = req.params;
-  const ahmed = "71492353";
   let response = "";
   if (user.toLowerCase() !== touser.toLowerCase()) {
     const twitch = new twitchApi(env.client_id, env.client_secret);
@@ -856,19 +855,23 @@ router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
         const access_token = await twitch.RefreshToken(users_keys.value);
         console.log(touser);
         const touser_id = await twitch.getId(touser);
-        const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
-        console.log(shoutout);
-        if (shoutout?.status == 400) {
-          return "Error. El streamer no está en vivo o no tiene uno o más espectadores.";
-        } else if (shoutout?.status == 429) {
-          return "Error. Se ha excedido el límite de shoutouts";
+        if (touser_id) {
+          const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
+          console.log(shoutout);
+          if (shoutout?.status == 400) {
+            return `${user} -> El streamer no está en vivo o no tiene uno o más espectadores.`;
+          } else if (shoutout?.status == 429) {
+            return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
+          } else {
+            return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
+          }
         } else {
-          return `Sigan a @${touser} !! https://www.twitch.tv/${touser.toLowerCase()}`;
+          return `${user} -> No se ha podido hacer shoutout, el usuario mencionado no existe.`;
         }
       }
     })))).filter(users_keys => users_keys);
   } else {
-    response = "Error. Debe mencionar a un streamer";
+    response = `${user} -> Debe mencionar a un streamer`;
   }
   return new JsResponse(response);
 });
