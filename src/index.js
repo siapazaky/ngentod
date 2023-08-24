@@ -585,6 +585,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
   let { url } = req.params;
   let image_url = "";
   let url_fetch;
+  let cloudinary_url = "";
   url = decodeURIComponent(url);
   const filename = url.replace(/^.*[\\\/]/, "");
   const file_extension = filename.replace(/^.*\./, "");
@@ -603,8 +604,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       body: fdCloudinary
     });
     const cloudinary_response = await cloudinary_fetch.json();
-    const cloudinary_url = cloudinary_response.secure_url;
-    console.log(cloudinary_url);
+    cloudinary_url = cloudinary_response.secure_url;
     url_fetch = await fetch(cloudinary_url);
   } else {
     console.log("es PNG");
@@ -613,6 +613,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       body: fdCloudinary
     });
     const cloudinary_response = await cloudinary_fetch.json();
+    cloudinary_url = cloudinary_response.secure_url;
     url_fetch = await fetch(url);
   }
   const blob = await url_fetch.blob();
@@ -633,7 +634,6 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       body: formData
     });
     const response = await openaifetch.json();
-    console.log(response);
     let openai_b64 = response.data[0].b64_json;
     const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
     const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
@@ -658,7 +658,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       image_url = error.message;
     }
   }
-  return new JsResponse(image_url);
+  return new JsResponse(JSON.stringify({original: cloudinary_url, variation: String(image_url)}));
 });
 
 // Twitch Auth that redirect to oauth callback to save authenticated users
