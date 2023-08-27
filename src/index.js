@@ -9,7 +9,7 @@ import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
-import twitterApi from "./twitterApi";
+// import twitterApi from "./twitterApi";
 
 const router = Router();
 // educar
@@ -845,34 +845,31 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
 // Nightbot command: Shoutout
 router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
   const { user, channel_id, touser } = req.params;
-  let response = "";
-  if (user.toLowerCase() !== touser.toLowerCase()) {
-    const twitch = new twitchApi(env.client_id, env.client_secret);
-    const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-    response = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (channel_id == users_keys.key) {
-        const access_token = await twitch.RefreshToken(users_keys.value);
-        console.log(touser);
-        const touser_id = await twitch.getId(touser);
-        if (touser_id) {
-          const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
-          console.log(shoutout);
-          if (shoutout?.status == 400) {
-            return `${user} -> El streamer no está en vivo o no tiene uno o más espectadores.`;
-          } else if (shoutout?.status == 429) {
-            return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
-          } else {
-            return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
-          }
-        } else {
-          return `${user} -> No se ha podido hacer shoutout, el usuario mencionado no existe.`;
-        }
-      }
-    })))).filter(users_keys => users_keys);
-  } else {
-    response = `${user} -> Debe mencionar a un streamer`;
+  if (user.toLowerCase() === touser.toLowerCase()) {
+    return new JsResponse(`${user} -> Debe mencionar a un streamer`);
   }
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
+  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const response = (await Promise.all((users_keys.map(async(users_keys) => {
+    if (channel_id !== users_keys.key) return;
+    const access_token = await twitch.RefreshToken(users_keys.value);
+    console.log(touser);
+    const touser_id = await twitch.getId(touser);
+    if (!touser_id) {
+      return `${user} -> No se ha podido hacer shoutout, el usuario mencionado no existe.`;
+    }
+    const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
+    console.log(shoutout);
+    if (shoutout?.status == 400) {
+      return `${user} -> El streamer no está en vivo o no tiene uno o más espectadores.`;
+    } else if (shoutout?.status == 429) {
+      return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
+    }
+    return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
+
+  })))).filter(users_keys => users_keys);
+
   return new JsResponse(response);
 });
 
