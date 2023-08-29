@@ -703,9 +703,9 @@ router.get("/leaderboard/:channelID/:page", async (req, env) => {
   let msg = "";
   let dots = "_";
   let response ="";
-  function insert(str, index, value) {
+  const insert = (str, index, value) => {
     return str.substr(0, index) + value + str.substr(index);
-  }
+  };
   for(let i = 0; i < users_keys.length; i++) {
     let user_key = users_keys[i].key;
     if (channelID == user_key) {
@@ -1053,7 +1053,7 @@ router.get("/lol/live-game?", async (req, env,) => {
     data = "No se ha especificado la región o la región es incorrecta. Manera correcta: !lolgame <invocador> <region>";
   }
 
-  async function AdjustParticipants(participants, team, region, game_type, team_color, champion_data) {
+  const AdjustParticipants = async(participants, team, region, game_type, team_color, champion_data) => {
     participants.championName = (String(jp.query(champion_data.data, `$..[?(@.key==${participants.championId})].name`)));
     let summonerName = participants.summonerName.charAt(0);
     let sn2 = participants.summonerName.slice(1);
@@ -1089,8 +1089,7 @@ router.get("/lol/live-game?", async (req, env,) => {
       console.log("dots mayor");
       team.push(`${team_color}${summonerName.replaceAll(" ","")}(${participants.championName.replaceAll(" ","")})${dots.repeat(names_size)}${division}${lp}`);
     }
-  }
-
+  };
   console.log(data);
   return new Response(data);
 });
@@ -1646,9 +1645,9 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     return await data;
   };
 
-  function delay(ms) {
+  const delay = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  };
 
   const fetched = await apiFetch();
   const id = String(fetched.id);
