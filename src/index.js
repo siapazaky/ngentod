@@ -1462,7 +1462,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
       }
     };
 
-    if (url.includes("facebook.com/watch") || url.includes("fb.watch/")) {
+    if (url.includes("facebook.com/watch") || url.includes("fb.watch/") || url.includes("fb.gg/")) {
       return await dataFetch(url, false);
     } else if (url.includes ("/videos/")) {
       const id = obtenerIDDesdeURL(url);
