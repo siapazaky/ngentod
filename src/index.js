@@ -4,6 +4,7 @@ import twitchApi from "./twitchApi";
 import cloudflareApi from "./cloudflareApi";
 import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
+import fetchAdapter from "@haverstack/axios-fetch-adapter";
 import spotifyApi from "./spotifyApi";
 import riotApi from "./riotApi";
 import imgurApi from "./imgurApi";
@@ -405,6 +406,9 @@ router.get("/ia/:prompt/:user", async (req, env) => {
   const { prompt, user } = req.params;
   const configuration = new Configuration({
     apiKey: env.openai_token,
+    baseOptions: {
+      adapter: fetchAdapter
+    }
   });
   const openai = new OpenAIApi(configuration);
   const response = await openai.createCompletion({
@@ -425,6 +429,9 @@ router.get("/ai/translate/:prompt", async (req, env) => {
   const { prompt } = req.params;
   const configuration = new Configuration({
     apiKey: env.openai_token,
+    baseOptions: {
+      adapter: fetchAdapter
+    }
   });
   const openai = new OpenAIApi(configuration);
   const detectlanguage_url = "https://ws.detectlanguage.com/0.2/detect";
@@ -482,6 +489,9 @@ router.get("/dc/ai/:user/:prompt", async (req, env) => {
   console.log("Prompt: "+prompt);
   const configuration = new Configuration({
     apiKey: env.openai_token,
+    baseOptions: {
+      adapter: fetchAdapter
+    }
   });
   const openai = new OpenAIApi(configuration);
   let history = await env.R2gpt.get("history.txt");
@@ -546,6 +556,9 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
   try {
     const configuration = new Configuration({
       apiKey: env.openai_token,
+      baseOptions: {
+        adapter: fetchAdapter
+      }
     });
     const openai = new OpenAIApi(configuration);
     const response = await openai.createImage({
@@ -1598,6 +1611,9 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
   }
   const configuration = new Configuration({
     apiKey: env.openai_token,
+    baseOptions: {
+      adapter: fetchAdapter
+    }
   });
   const openai = new OpenAIApi(configuration);
   const IA = async() => {
