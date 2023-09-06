@@ -29,7 +29,7 @@ class riotApi {
       region = "kr";
       break;
     case "jp":
-      region = "jp";
+      region = "jp1";
       break;
     case "oce":
       region = "oc1";
