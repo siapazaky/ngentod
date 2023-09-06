@@ -60,19 +60,16 @@ class riotApi {
   }
 
   RegionalRouting(region) {
-    let regional_routing;
     if (region == "na" || region == "br" || region == "lan" || region == "las") {
-      regional_routing = "americas";
+      return "americas";
     } else if (region == "euw" || region == "eune" || region == "tr" || region == "ru") {
-      regional_routing = "europe";
+      return "europe";
     } else if (region == "kr" || region == "jp") {
-      region = "asia";
+      return "asia";
     } else if (region == "oce" || region == "ph" || region == "vn" || region == "sg" || region == "th" || region == "tw") {
-      regional_routing = "sea";
-    } else {
-      regional_routing = false;
+      return "sea";
     }
-    return regional_routing;
+    return false;
   }
 
   async SummonerDataByName(summoner_name, region) {
@@ -94,7 +91,7 @@ class riotApi {
     return response;
   }
 
-  async GetMatches(puuid, regional_routing, count) {
+  async getMatches(puuid, regional_routing, count) {
     const data = await fetch(`https://${regional_routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${this.riot_token}`);
     const response = await data.json();
     return response;

@@ -1175,10 +1175,10 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       const count = 10;
       const regional_routing = riot.RegionalRouting(region);
       console.log(regional_routing);
-      const matchesId = await riot.GetMatches(puuid, regional_routing ,count);
+      const matchesId = await riot.getMatches(puuid, regional_routing ,count);
+      console.log(matchesId);
       const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
       const champion_data = await champion_list.json();
-      console.log(matchesId);
       for (let i = 0; i < matchesId.length; i++) {
         const match_data = await riot.getMatchFromId(matchesId[i], regional_routing);
         const gameEndTimestamp = match_data.info.gameEndTimestamp;
