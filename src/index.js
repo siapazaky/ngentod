@@ -1544,7 +1544,7 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
 router.get("/dc/twitter-video-scrapper?", async (req, env) => {
   const { query } = req;
   const url = decodeURIComponent(query.url);
-  const graphql = "https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g";
+  const graphql = "https://twitter.com/i/api/graphql/xOhkmRac04YFZmOzU9PJHg";
   if (url.includes("twitter.com/")) {
     console.log("es link de twitter");
     const id = obtenerIDDesdeURL(url);
