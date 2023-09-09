@@ -1379,7 +1379,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
 
   const retryScrap = async () => {
     try {
-      return scrap();
+      return await scrap();
     } catch (error) {
       console.log(error);
       if (count < maxTries) {
@@ -1491,7 +1491,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
 
   const retryScrap = async () => {
     try {
-      return scrap();
+      return await scrap();
     } catch (error) {
       console.log(error);
       if (count < maxTries) {
@@ -1509,32 +1509,50 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
 router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
   const { query } = req;
   const url = decodeURIComponent(query.url);
+  let count = 0;
+  let maxTries = 3;
   if (url.includes("tiktok.com/")) {
     console.log("es link de tiktok");
-    const fetchTikTokMobile = await fetch(url);
-    const html = await fetchTikTokMobile.text();
-    const body = cheerio.load(html);
-    const scripts = [];
-    body("script").each((i, el) => {
-      const script = body(el).html();
-      if (script.includes("\"ItemModule\"")) {
-        scripts.push(script);
-      }
-    });
-    const json = JSON.parse(scripts).ItemModule;
-    const tt_id = jp.query(json, "$..[?(@.id)].id")[0];
-    console.log(tt_id);
-    const response = await fetch(`https://api.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
-    const data = await response.json();
-    const video_url = data.aweme_list[0].video.play_addr.url_list[0];
-    const caption = (data.aweme_list[0].desc).trim().replace(/\s+$/, "");
-    console.log(video_url);
-    const json_response = {
-      video_url: video_url,
-      short_url: "https://m.tiktok.com/v/"+ tt_id,
-      caption: caption
+    const scrap = async () => {
+      const fetchTikTokMobile = await fetch(url);
+      const html = await fetchTikTokMobile.text();
+      const body = cheerio.load(html);
+      const scripts = [];
+      body("script").each((i, el) => {
+        const script = body(el).html();
+        if (script.includes("\"ItemModule\"")) {
+          scripts.push(script);
+        }
+      });
+      const json = JSON.parse(scripts).ItemModule;
+      const tt_id = jp.query(json, "$..[?(@.id)].id")[0];
+      console.log(tt_id);
+      const response = await fetch(`https://api.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
+      const data = await response.json();
+      const video_url = data.aweme_list[0].video.play_addr.url_list[0];
+      const caption = (data.aweme_list[0].desc).trim().replace(/\s+$/, "");
+      console.log(video_url);
+      const json_response = {
+        video_url: video_url,
+        short_url: "https://m.tiktok.com/v/"+ tt_id,
+        caption: caption
+      };
+      return JSON.stringify(json_response);
     };
-    return new JsResponse(JSON.stringify(json_response));
+    const retryScrap = async () => {
+      try {
+        return await scrap();
+      } catch (error) {
+        console.log(error);
+        if (count < maxTries) {
+          count++;
+          return await retryScrap();
+        } else {
+          return "Máximo de intentos alcanzados";
+        }
+      }
+    };
+    return new JsResponse(await retryScrap());
   } else {
     console.log("no es link de tiktok");
     return new JsResponse("Url no válida");
