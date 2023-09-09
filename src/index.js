@@ -1371,7 +1371,8 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       const json_response = {
         video_url: video_url,
         short_url: url.replace(/\?.*$/, "").replace("www.",""),
-        caption: caption
+        caption: caption,
+        status: 200
       };
       return JSON.stringify(json_response);
     }
@@ -1386,7 +1387,8 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
         count++;
         return await retryScrap();
       } else {
-        return "Máximo de intentos alcanzados";
+        const json_error = {status: 429};
+        return JSON.stringify(json_error);
       }
     }
   };
@@ -1470,7 +1472,8 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         const json_object = {
           short_url: data?.shareable_url.replace("www.",""),
           video_url: data?.playback_video.browser_native_hd_url,
-          caption: caption
+          caption: caption,
+          status: 200
         };
         return JSON.stringify(json_object);
       }
@@ -1498,7 +1501,8 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         count++;
         return await retryScrap();
       } else {
-        return "Máximo de intentos alcanzados";
+        const json_error = {status: 429};
+        return JSON.stringify(json_error);
       }
     }
   };
@@ -1535,7 +1539,8 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
       const json_response = {
         video_url: video_url,
         short_url: "https://m.tiktok.com/v/"+ tt_id,
-        caption: caption
+        caption: caption,
+        status: 200
       };
       return JSON.stringify(json_response);
     };
@@ -1548,7 +1553,8 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
           count++;
           return await retryScrap();
         } else {
-          return "Máximo de intentos alcanzados";
+          const json_error = {status: 429};
+          return JSON.stringify(json_error);
         }
       }
     };
@@ -1600,12 +1606,13 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
       const json_response = {
         video_url: video_url,
         short_url: short_url,
-        caption: caption
+        caption: caption,
+        status: 200
       };
       return new JsResponse(JSON.stringify(json_response));
     } else {
       console.log("no es video");
-      return new JsResponse(JSON.stringify({ video_url: "No es un video" }));
+      return new JsResponse(JSON.stringify({ status: 404 }));
     }
   } else {
     console.log("no es link de twitter");
