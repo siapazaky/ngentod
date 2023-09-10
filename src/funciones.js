@@ -7,11 +7,11 @@ export const getDateAgoFromTimeStamp = (timestamp) => {
   let fechaActual = new Date().getTime();
   let diferencia = fechaActual - timestampEspecifico;
 
-  let segundos = Math.round(diferencia / 1000);
-  let minutos = Math.round(segundos / 60);
-  let horas = Math.round(minutos / 60);
-  let dias = Math.round(horas / 24);
-  let meses = Math.round(dias / 30);
+  let segundos = Math.floor(diferencia / 1000);
+  let minutos = Math.floor(segundos / 60);
+  let horas = Math.floor(minutos / 60);
+  let dias = Math.floor(horas / 24);
+  let meses = Math.floor(dias / 30);
 
   let unidadTiempo;
   let cantidad;
