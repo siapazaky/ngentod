@@ -1142,7 +1142,7 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       } else {
         titleName = "";
       }
-      profile_data = {status_code: 200, summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase(), titleName: titleName};
+      profile_data = {status_code: 200, summonerId: summoner_id, puuid: puuid, summonerName: summoner_name, summonerLevel: summoner_level, profileIconId: summoner_icon, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase(), route: region_route, titleName: titleName};
       const ranked_data = await riot.RankedData(summoner_id, region_route);
       ranked_data.forEach((rankedData) => {
         if (rankedData.queueType !== "CHERRY") {
