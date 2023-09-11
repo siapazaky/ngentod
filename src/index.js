@@ -1488,7 +1488,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
       return await dataFetch(url, true);
     } else {
       console.log("Invalid url");
-      return "Url no válida";
+      return JSON.stringify({status: 400});
     }
   };
 
