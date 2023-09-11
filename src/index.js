@@ -1448,7 +1448,8 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         const json_object = {
           short_url: "https://facebook.com/watch/?v=" + data?.id,
           video_url: data?.browser_native_hd_url,
-          caption: caption
+          caption: caption,
+          status: 200
         };
         return JSON.stringify(json_object);
       } else {
