@@ -1338,7 +1338,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
 
     if (!idUrl) {
       console.log("Invalid url");
-      return "Url no válida";
+      return JSON.stringify({status: 400});
     } else {
       const response = await fetch(`https://www.instagram.com/p/${idUrl}?__a=1&__d=di`, {
         headers: {
@@ -1587,9 +1587,9 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
       }
     });
     const result = await fetchTweet.json();
-    const data = result.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy;
+    const data = result.data?.threaded_conversation_with_injections_v2?.instructions[0]?.entries[0]?.content?.itemContent?.tweet_results?.result?.legacy;
     console.log(data);
-    if (data.extended_entities.media[0].video_info) {
+    if (data?.extended_entities?.media[0]?.video_info) {
       const videos = data.extended_entities.media[0].video_info.variants;
       const short_url = data.extended_entities.media[0].url;
       const caption = data.full_text.replace(/https:\/\/t\.co\/\w+/g, "").trim();
