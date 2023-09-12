@@ -1002,6 +1002,45 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
   }
 });
 
+router.get("/put-r2-chokis?", async (req, env, ctx) => {
+  const { query } = req;
+  const video_url = query.video_url;
+  console.log(video_url);
+  if (video_url) {
+    const f = await fetch(video_url);
+    const b = await f.arrayBuffer();
+    const type = "video/mp4";
+    const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
+    const headers = new Headers(httpHeaders);
+    const uniqueId = generateUniqueId();
+
+    const putR2 = async(id) => {
+      const object = await env.R2cdn.put(`chokis/${id}.mp4`, b, {httpMetadata: headers});
+      console.log(`escrito: ${id}`);
+      return `https://cdn.ahmedrangel.com/chokis/${id}.mp4`;
+    };
+
+    const comprobarCDN = async(id) => {
+      const comprobar = await fetch(`https://cdn.ahmedrangel.com/chokis/${id}.mp4`);
+      if (comprobar.status === 200) {
+        console.log("existe, generar nuevo id, y volver a comprobar");
+        const uniqueId = generateUniqueId();
+        return await comprobarCDN(uniqueId);
+      } else {
+        console.log("no existe, put en r2cdn");
+        return await putR2(id);
+      }
+    };
+
+    const response = await comprobarCDN(uniqueId);
+
+    return new JsResponse(response);
+
+  } else {
+    return new JsResponse("Error. No se ha encontrado un video.");
+  }
+});
+
 router.get("/lol/live-game?", async (req, env,) => {
   const { query } = req;
   let q_summoner;
