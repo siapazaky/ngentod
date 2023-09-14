@@ -65,7 +65,6 @@ export const obtenerIDDesdeURL = (url) => {
   const resultado = expresionRegular.exec(url);
   if (resultado && resultado.length > 1) {
     return resultado[1];
-  } else {
-    return null;
   }
+  return null;
 };
