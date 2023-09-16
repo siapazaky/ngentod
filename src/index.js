@@ -6,7 +6,7 @@ import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
 import fetchAdapter from "@haverstack/axios-fetch-adapter";
 import spotifyApi from "./spotifyApi";
-import riotApi from "./riotApi";
+import riotApi, { eloValues } from "./riotApi";
 import imgurApi from "./imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
@@ -1213,7 +1213,7 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       const count = 10;
       const regional_routing = riot.RegionalRouting(region);
       console.log(regional_routing);
-      const matchesId = await riot.getMatches(puuid, regional_routing ,count);
+      const matchesId = await riot.getMatches(puuid, regional_routing , count);
       console.log(matchesId);
       const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
       const champion_data = await champion_list.json();
@@ -1246,6 +1246,90 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
     profile_data = {status_code: 404, errorName: "region"};
   }
   return new Response(JSON.stringify(profile_data));
+});
+
+router.get("/lol/elo-for-discord?", async (req, env,) => {
+  const riot = new riotApi(env.riot_token);
+  const { query } = req;
+  const region = (query.region).toLowerCase();
+  const summoner = query.summoner;
+  const type = query.type;
+  const queueId = type === "flex" ? 440 : 420;
+  const queueCase = riot.queueCase(queueId);
+  let elo_data;
+  const samples = [], elo_samples = [];
+  const region_route = await riot.RegionNameRouting(region);
+  if (summoner && region_route !== false && region !== undefined) {
+    const count = 4;
+    const summoner_data = await riot.SummonerDataByName(summoner, region_route);
+    if (summoner_data.status == undefined) {
+      const summoner_id = summoner_data.id;
+      const summoner_level = summoner_data.summonerLevel;
+      const summoner_icon = summoner_data.profileIconId;
+      const summoner_name = summoner_data.name;
+      const puuid = summoner_data.puuid;
+      const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
+      const ddversions_data = await ddversions.json();
+      elo_data = {summonerName: summoner_name, summonerLevel: summoner_level, profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner_icon}.png`, region: region.toUpperCase(), region_route: region_route};
+      const ranked_data = await riot.RankedData(summoner_id, region_route);
+      console.log(ranked_data);
+      if (ranked_data.length === 0) {
+        elo_data.status_code = 404;
+        elo_data.errorName = "ranked";
+      } else {
+        for (const el of ranked_data) {
+          if (el?.queueType === queueCase.profile_rank_type) {
+            const eloTier = riot.tierCase(el.tier).full;
+            const eloRank = el.tier !== "MASTER" && el.tier !== "GRANDMASTER" && el.tier !== "CHALLENGER" ? el.rank : "";
+            elo_data.ranked = {tier: eloTier.toUpperCase(), rank: eloRank, wins: el.wins, losses: el.losses, leaguePoints: el.leaguePoints, queueName: queueCase.full_name};
+            const regional_routing = riot.RegionalRouting(region);
+            const matchesId = await riot.getMatches(puuid, regional_routing , count, queueId);
+            for (const matches of matchesId) {
+              const match_data = await riot.getMatchFromId(matches, regional_routing);
+              const participants = match_data.info.participants;
+              participants.forEach((p) => {
+                if (p.puuid !== puuid) {
+                  samples.push(p.summonerId);
+                }
+              });
+            }
+            const fixedSamples = [...new Set(samples)];
+            for (const s of fixedSamples) {
+              const ranked_data = await riot.RankedData(s, region_route);
+              for (const el of ranked_data) {
+                if (el?.queueType === queueCase.profile_rank_type) {
+                  elo_samples.push(eloValues[el.tier + " " + el.rank]);
+                }
+              }
+            }
+            console.log(elo_samples);
+            const suma = elo_samples.reduce((total, valor) => total + valor, 0);
+            const promedio = Math.round(suma / elo_samples.length);
+            for (const eloName in eloValues) {
+              if (eloValues[eloName] === promedio) {
+                const eloNameSplit = eloName.split(" ");
+                const eloTier = riot.tierCase(eloNameSplit[0]).full;
+                const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
+                elo_data.avg = {tier: eloTier.toUpperCase(), rank: eloRank};
+                break;
+              } else {
+                elo_data.avg = {tier: "Desconocido", rank: "Desconocido"};
+              }
+            }
+            elo_data.status_code = 200;
+          } else {
+            elo_data.status_code = 404;
+            elo_data.errorName = "ranked";
+          }
+        }
+      }
+    } else {
+      elo_data = {status_code: 404, errorName: "summoner"};
+    }
+  } else {
+    elo_data = {status_code: 404, errorName: "region"};
+  }
+  return new Response(JSON.stringify(elo_data));
 });
 
 router.get("/rank?", async (req, env,) => {
