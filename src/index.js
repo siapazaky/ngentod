@@ -1317,6 +1317,7 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
               }
             }
             elo_data.status_code = 200;
+            break;
           } else {
             elo_data.status_code = 404;
             elo_data.errorName = "ranked";
