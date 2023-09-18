@@ -1281,7 +1281,14 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
           if (el?.queueType === queueCase.profile_rank_type) {
             const eloTier = riot.tierCase(el.tier).full;
             const eloRank = el.tier !== "MASTER" && el.tier !== "GRANDMASTER" && el.tier !== "CHALLENGER" ? el.rank : "";
-            elo_data.ranked = {tier: eloTier.toUpperCase(), rank: eloRank, wins: el.wins, losses: el.losses, leaguePoints: el.leaguePoints, queueName: queueCase.full_name};
+            elo_data.ranked = {
+              tier: eloTier.toUpperCase(),
+              rank: eloRank,
+              wins: el.wins,
+              losses: el.losses,
+              leaguePoints: el.leaguePoints,
+              queueName: queueCase.full_name
+            };
             const regional_routing = riot.RegionalRouting(region);
             const matchesId = await riot.getMatches(puuid, regional_routing , count, queueId);
             for (const matches of matchesId) {
