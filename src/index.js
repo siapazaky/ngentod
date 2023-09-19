@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL } from "./funciones";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate } from "./funciones";
 import twitchApi from "./twitchApi";
 import cloudflareApi from "./cloudflareApi";
 import JsResponse from "./response";
@@ -365,15 +365,6 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
 
   let response = new JsResponse(`[${top_users}]`);
   return response;
-});
-
-// get followers by twitch channel
-router.get("/followers/:channel", async (req, env) => {
-  const { channel } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
-  const channel_id = await twitch.getId(channel);
-  const followers = await twitch.getFollowers(channel_id);
-  return new JsResponse(followers);
 });
 
 router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
@@ -1895,6 +1886,28 @@ router.get("/dc/kick-live?", async (req, env) => {
     response = {notificar: false};
   }
   return new JsResponse(JSON.stringify(response));
+});
+
+// Nightbot command: Followage
+router.get("/followage/:channel/:touser", async (req, env) => {
+  const { channel, touser } = req.params;
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const auth_list = (await env.AUTH_USERS.list()).keys;
+  const response = (await Promise.all((auth_list.map(async(users_keys) => {
+    const channel_id = await twitch.getId(channel);
+    if (channel_id === users_keys.name) {
+      const touser_id = await twitch.getId(touser);
+      const access_token = await twitch.RefreshToken(users_keys.metadata.value);
+      const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
+      if (data?.followed_at) {
+        const unitsString = getTimeUnitsFromISODate(data?.followed_at);
+        return `${touser} ha estado siguiendo a ${channel} por ${unitsString}`;
+      }
+      return `${touser} no está siguiendo a ${channel}`;
+    }
+  })))).filter(users_keys => users_keys);
+  console.log(response);
+  return new JsResponse(response);
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));

@@ -64,25 +64,6 @@ class twitchApi {
     }
   }
 
-  async getFollowers (channel_id) {
-    const accessToken = await this.getAccessToken();
-    const api = `https://api.twitch.tv/helix/users/follows?to_id=${channel.toLowerCase()}`;
-    const headers = {
-      "Client-ID": this.client_id,
-      "Authorization": "Bearer " + accessToken
-    };
-
-    if(!accessToken) {
-      console.log("No Token");
-      return null;
-    } else {
-      const response = await fetch(api, {method: "GET", headers: headers});
-      const body = await response.json();
-      console.log(body.data[0].from_name);
-      return body.data;
-    };
-  }
-
   async getBroadcasterInfo(channel_id) {
     const accessToken = await this.getAccessToken();
     const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`;
@@ -236,7 +217,7 @@ class twitchApi {
   }
 
   // Get if someone follow a broadcaster (requires boradcaster oauth)
-  async getFollower (user_access_token, channel_id, user_id) {
+  async getChannelFollower (user_access_token, channel_id, user_id) {
     const api = `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
     const response = await fetch(api, {
       method: "GET",
@@ -245,7 +226,7 @@ class twitchApi {
         "Authorization": "Bearer " + user_access_token
       }});
     const { data } = await response.json();
-    return data;
+    return data[0];
 
   }
 }
