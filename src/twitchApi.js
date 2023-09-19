@@ -23,7 +23,7 @@ class twitchApi {
   async getUsername (user_id) {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `https://api.twitch.tv/helix/users?id=${user_id}`;
+      const api = `https://api.twitch.tv/helix/users?id=${user_id}`;
       const headers = {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
@@ -33,7 +33,7 @@ class twitchApi {
         console.log("No Token");
         return null;
       } else {
-        const response = await fetch(url, {method: "GET", headers: headers});
+        const response = await fetch(api, {method: "GET", headers: headers});
         const body = await response.json();
         return body.data[0].display_name;
       };
@@ -45,7 +45,7 @@ class twitchApi {
   async getId (user_name) {
     try {
       const accessToken = await this.getAccessToken();
-      const url = `https://api.twitch.tv/helix/users?login=${user_name.toLowerCase()}`;
+      const api = `https://api.twitch.tv/helix/users?login=${user_name.toLowerCase()}`;
       const headers = {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
@@ -55,7 +55,7 @@ class twitchApi {
         console.log("No Token");
         return null;
       } else {
-        const response = await fetch(url, {method: "GET", headers: headers});
+        const response = await fetch(api, {method: "GET", headers: headers});
         const body = await response.json();
         return body.data[0].id;
       };
@@ -66,7 +66,7 @@ class twitchApi {
 
   async getFollowers (channel_id) {
     const accessToken = await this.getAccessToken();
-    const url = `https://api.twitch.tv/helix/users/follows?to_id=${channel.toLowerCase()}`;
+    const api = `https://api.twitch.tv/helix/users/follows?to_id=${channel.toLowerCase()}`;
     const headers = {
       "Client-ID": this.client_id,
       "Authorization": "Bearer " + accessToken
@@ -76,7 +76,7 @@ class twitchApi {
       console.log("No Token");
       return null;
     } else {
-      const response = await fetch(url, {method: "GET", headers: headers});
+      const response = await fetch(api, {method: "GET", headers: headers});
       const body = await response.json();
       console.log(body.data[0].from_name);
       return body.data;
@@ -85,7 +85,7 @@ class twitchApi {
 
   async getBroadcasterInfo(channel_id) {
     const accessToken = await this.getAccessToken();
-    const url = `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`;
+    const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`;
     const headers = {
       "Client-ID": this.client_id,
       "Authorization": "Bearer " + accessToken
@@ -95,7 +95,7 @@ class twitchApi {
       console.log("No Token");
       return null;
     } else {
-      const response = await fetch(url, {method: "GET", headers: headers});
+      const response = await fetch(api, {method: "GET", headers: headers});
       const body = await response.json();
       console.log(body.data[0]);
       return body.data[0];
@@ -144,8 +144,8 @@ class twitchApi {
 
   // Get Bits Leaderboard, require user access token
   async getBitsLeaderBoard (user_access_token) {
-    const leaderboard = "https://api.twitch.tv/helix/bits/leaderboard?count=20&period=all";
-    const top_users = await fetch(leaderboard, {
+    const api = "https://api.twitch.tv/helix/bits/leaderboard?count=20&period=all";
+    const top_users = await fetch(api, {
       method: "GET",
       headers: {
         "Client-ID": this.client_id,
@@ -159,8 +159,8 @@ class twitchApi {
   // Set Stream Tags, require user access token, tags must be an array
   async SetTags (user_access_token, channelID, tags) {
     console.log(tags);
-    const manage_stream_url = `https://api.twitch.tv/helix/channels?broadcaster_id=${channelID}`;
-    const set_tags = await fetch(manage_stream_url, {
+    const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channelID}`;
+    const set_tags = await fetch(api, {
       method: "PATCH",
       headers: {
         "Accept": "application/json",
@@ -175,8 +175,8 @@ class twitchApi {
 
   // Set Stream Moderator, require user access token
   async AddMod (user_access_token, channel_id, user_id) {
-    const manage_stream_url = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
-    const add_mod = await fetch(manage_stream_url, {
+    const api = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const add_mod = await fetch(api, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -190,8 +190,8 @@ class twitchApi {
 
   // Remove Stream Moderator, require user access token
   async UnMod (user_access_token, channel_id, user_id) {
-    const manage_stream_url = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
-    const unmod = await fetch(manage_stream_url, {
+    const api = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const unmod = await fetch(api, {
       method: "DELETE",
       headers: {
         "Accept": "application/json",
@@ -205,8 +205,8 @@ class twitchApi {
 
   // Get chatters as mod or broadcaster, require user access token
   async getChatters (user_access_token, channel_id, mod_id) {
-    const chatters = `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel_id}&moderator_id=${mod_id}`;
-    const response = await fetch(chatters, {
+    const api = `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel_id}&moderator_id=${mod_id}`;
+    const response = await fetch(api, {
       method: "GET",
       headers: {
         "Client-ID": this.client_id,
@@ -219,8 +219,8 @@ class twitchApi {
 
   // Post shoutout, require user access token
   async ShoutOut (user_access_token, channel_id, to_channel_id) {
-    const shoutou_endpoint = `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${to_channel_id}&moderator_id=${channel_id}`;
-    const shoutout = await fetch(shoutou_endpoint, {
+    const api = `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${to_channel_id}&moderator_id=${channel_id}`;
+    const shoutout = await fetch(api, {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -233,6 +233,20 @@ class twitchApi {
       return null;
     }
     return await shoutout.json();
+  }
+
+  // Get if someone follow a broadcaster (requires boradcaster oauth)
+  async getFollower (user_access_token, channel_id, user_id) {
+    const api = `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const response = await fetch(api, {
+      method: "GET",
+      headers: {
+        "Client-ID": this.client_id,
+        "Authorization": "Bearer " + user_access_token
+      }});
+    const { data } = await response.json();
+    return data;
+
   }
 }
 
