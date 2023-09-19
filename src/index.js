@@ -677,7 +677,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
 // Twitch Auth that redirect to oauth callback to save authenticated users
 router.get("/twitch/auth", async (req, env) => {
   const redirect_uri = "https://dev.ahmedrangel.com/twitch/user-oauth";
-  const scopes = "bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers";
+  const scopes = "bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows";
   const dest = new URL("https://id.twitch.tv/oauth2/authorize?"); // destination
   dest.searchParams.append("client_id", env.client_id);
   dest.searchParams.append("redirect_uri", redirect_uri);
