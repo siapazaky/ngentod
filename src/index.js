@@ -1820,12 +1820,11 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     if (fetched.status === "success" || fetched.status === "error") {
       if (fetched.status === "success") {
         const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
-        const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-        const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+        const auth_list = (await env.AUTH_USERS.list()).keys;
         const imgur_user = "imgur_ahmedrangel";
-        let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
-          if (imgur_user == users_keys.key) {
-            const { access_token } = await imgur.RefreshToken(users_keys.value);
+        let imgur_url = (await Promise.all((auth_list.map(async(users_keys) => {
+          if (imgur_user == users_keys.name) {
+            const { access_token } = await imgur.RefreshToken(users_keys.metadata.value);
             const respuesta = await imgur.UploadImage(access_token, prompt, fetched.output[0], "Stable Diffusion: Anything-v5");
             const imgurl = respuesta.data.link;
             console.log(imgurl);
