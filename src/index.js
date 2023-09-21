@@ -1,7 +1,6 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate } from "./funciones";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue } from "./funciones";
 import twitchApi from "./twitchApi";
-import cloudflareApi from "./cloudflareApi";
 import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
 import fetchAdapter from "@haverstack/axios-fetch-adapter";
@@ -307,13 +306,13 @@ router.get("/top_users/angar/:env_var", async (req, env, ctx) => {
   env_var = env_var.toUpperCase();
   let limit = 10;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList(env_var);
-  let top_users_json = users_keys.map(users_keys => {
-    let user_id = users_keys.key.substr(0, users_keys.key.lastIndexOf("-"));
-    let channel_id = users_keys.key.substr(users_keys.key.lastIndexOf("-")+1, String(users_keys.key).length);
+  const KV = (await env[env_var].list()).keys;
+  const KV_sorted = KVSorterByValue(KV);
+  let top_users_json = KV_sorted.map(users_keys => {
+    let user_id = users_keys.name.substr(0, users_keys.name.lastIndexOf("-"));
+    let channel_id = users_keys.name.substr(users_keys.name.lastIndexOf("-")+1, String(users_keys.name).length);
     if (channel_id=="27457904") {
-      let msg = `{"usuario": "${user_id}", "valor": ${users_keys.value}, "tipo": "${env_var}", "canal": "${channel_id}"}`;
+      let msg = `{"usuario": "${user_id}", "valor": ${users_keys.metadata.value}, "tipo": "${env_var}", "canal": "${channel_id}"}`;
       return msg;
     }
   }).filter(user_keys => user_keys);
@@ -337,13 +336,13 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
   env_var = env_var.toUpperCase();
   let limit = 10;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList(env_var);
-  let top_users_json = users_keys.map(users_keys => {
-    let user_id = users_keys.key.substr(0, users_keys.key.lastIndexOf("-"));
-    let channel_id = users_keys.key.substr(users_keys.key.lastIndexOf("-")+1, String(users_keys.key).length);
+  const KV = (await env[env_var].list()).keys;
+  const KV_sorted = KVSorterByValue(KV);
+  let top_users_json = KV_sorted.map(users_keys => {
+    let user_id = users_keys.name.substr(0, users_keys.name.lastIndexOf("-"));
+    let channel_id = users_keys.name.substr(users_keys.name.lastIndexOf("-")+1, String(users_keys.name).length);
     if (channel_id=="491738569" && user_id !== "790016126") {
-      let msg = `{"usuario": "${user_id}", "valor": ${users_keys.value}, "tipo": "${env_var}", "canal": "${channel_id}"}`;
+      let msg = `{"usuario": "${user_id}", "valor": ${users_keys.metadata.value}, "tipo": "${env_var}", "canal": "${channel_id}"}`;
       return msg;
     }
   }).filter(user_keys => user_keys);
@@ -372,13 +371,12 @@ router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
   const mod_id = "71492353"; // ahmed
   let mensaje = "";
   let query_touser = query.replace("touser:", "");
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const auth_list = (await env.AUTH_USERS.list()).keys;
   if (query == "touser:" || query_touser == user) {
-    let response = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (mod_id == users_keys.key) {
-        const access_token = await twitch.RefreshToken(users_keys.value);
+    let response = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (mod_id == users_keys.name) {
+        const access_token = await twitch.RefreshToken(users_keys.metadata.value);
         let chatters = await twitch.getChatters(access_token, channel_id, mod_id);
         chatters = chatters[Math.floor(Math.random() * chatters.length)].user_name;
         return chatters;
@@ -559,13 +557,12 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
       response_format: "b64_json"
     });
     let openai_b64 = response.data.data[0].b64_json;
-    const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
     const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+    const auth_list = (await env.AUTH_USERS.list()).keys;
     const imgur_user = "imgur_ahmedrangel";
-    let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (imgur_user == users_keys.key) {
-        const { access_token } = await imgur.RefreshToken(users_keys.value);
+    let imgur_url = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (imgur_user == users_keys.name) {
+        const { access_token } = await imgur.RefreshToken(users_keys.metadata.value);
         const respuesta = await imgur.UploadImage(access_token, prompt, openai_b64, "AI DALL-E");
         const imgurl = respuesta.data.link;
         return imgurl;
@@ -639,13 +636,12 @@ router.get("/dc/image-variation/:url", async (req, env) => {
     });
     const response = await openaifetch.json();
     let openai_b64 = response.data[0].b64_json;
-    const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
     const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+    const auth_list = (await env.AUTH_USERS.list()).keys;
     const imgur_user = "imgur_ahmedrangel";
-    let imgur_url = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (imgur_user == users_keys.key) {
-        const { access_token } = await imgur.RefreshToken(users_keys.value);
+    let imgur_url = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (imgur_user == users_keys.name) {
+        const { access_token } = await imgur.RefreshToken(users_keys.metadata.value);
         const respuesta = await imgur.UploadImage(access_token, "Variación de: " + filename, openai_b64);
         const imgurl = respuesta.data.link;
         return imgurl;
@@ -701,8 +697,7 @@ router.get("/twitch/user-oauth?", async (req, env) => {
 router.get("/leaderboard/:channelID/:page", async (req, env) => {
   const { channelID, page } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const auth_list = (await env.AUTH_USERS.list()).keys;
   const break_line = "────────────────────────────────";
   let msg = "";
   let dots = "_";
@@ -710,10 +705,10 @@ router.get("/leaderboard/:channelID/:page", async (req, env) => {
   const insert = (str, index, value) => {
     return str.substr(0, index) + value + str.substr(index);
   };
-  for(let i = 0; i < users_keys.length; i++) {
-    let user_key = users_keys[i].key;
+  for(let i = 0; i < auth_list.length; i++) {
+    let user_key = auth_list[i].name;
     if (channelID == user_key) {
-      const access_token = await twitch.RefreshToken(users_keys[i].value);
+      const access_token = await twitch.RefreshToken(auth_list[i].metadata.value);
       const data = await twitch.getBitsLeaderBoard(access_token);
       if (page == 1) {
         for(let i = 0; i < 5; i++) {
@@ -754,18 +749,17 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   query_tags = query_tags.replaceAll(" ","").replace("tags:","").split(",");
   let tags_length = query_tags.length;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
   const break_line = "────────────────────────────────";
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
     let response = `El canal contiene actualmente las siguientes etiquetas: ${break_line} ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
     return new JsResponse(response);
   } else {
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-    let response = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (channelID == users_keys.key) {
-        const access_token = await twitch.RefreshToken(users_keys.value);
-        const tags = await twitch.SetTags(access_token, users_keys.key, query_tags);
+    const auth_list = (await env.AUTH_USERS.list()).keys;
+    let response = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (channelID == users_keys.name) {
+        const access_token = await twitch.RefreshToken(users_keys.metadata.value);
+        const tags = await twitch.SetTags(access_token, users_keys.name, query_tags);
         if (tags.status === 400 && tags_length < 10) {
           console.log(tags);
           return "Error. Una etiqueta contiene caracteres inválidos. Las etiquetas deben estar separadas por comas y evitar caracteres especiales o símbolos.";
@@ -787,15 +781,14 @@ router.get("/addmod/:user_id/:channel_id/:touser", async (req, env) => {
   const ahmed = "71492353";
   let response = "";
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
   if (user_id == ahmed || user_id == channel_id) {
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-    response = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (channel_id == users_keys.key) {
-        const access_token = await twitch.RefreshToken(users_keys.value);
+    const auth_list = (await env.AUTH_USERS.list()).keys;
+    response = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (channel_id == users_keys.name) {
+        const access_token = await twitch.RefreshToken(users_keys.metadata.value);
         console.log(touser);
         const to_user = await twitch.getId(touser);
-        const add_mod = await twitch.AddMod(access_token, users_keys.key, to_user);
+        const add_mod = await twitch.AddMod(access_token, users_keys.name, to_user);
         if (add_mod.status === 400 && to_user !== false) {
           console.log(add_mod);
           return "Error. El usuario ya es moderador del canal.";
@@ -821,15 +814,14 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
   const ahmed = "71492353";
   let response = "";
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
   if (user_id == ahmed || user_id == channel_id) {
-    const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-    response = (await Promise.all((users_keys.map(async(users_keys) => {
-      if (channel_id == users_keys.key) {
-        const access_token = await twitch.RefreshToken(users_keys.value);
+    const auth_list = (await env.AUTH_USERS.list()).keys;
+    response = (await Promise.all((auth_list.map(async(users_keys) => {
+      if (channel_id == users_keys.name) {
+        const access_token = await twitch.RefreshToken(users_keys.metadata.value);
         console.log(touser);
         const to_user = await twitch.getId(touser);
-        const unmod = await twitch.UnMod(access_token, users_keys.key, to_user);
+        const unmod = await twitch.UnMod(access_token, users_keys.name, to_user);
         if (unmod.status === 400 && to_user !== false) {
           return "Error. Este usuario no es moderador";
         } else if (to_user === false) {
@@ -853,11 +845,10 @@ router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
     return new JsResponse(`${user} -> Debe mencionar a un streamer`);
   }
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-  const response = (await Promise.all((users_keys.map(async(users_keys) => {
-    if (channel_id !== users_keys.key) return;
-    const access_token = await twitch.RefreshToken(users_keys.value);
+  const auth_list = (await env.AUTH_USERS.list()).keys;
+  const response = (await Promise.all((auth_list.map(async(users_keys) => {
+    if (channel_id !== users_keys.name) return;
+    const access_token = await twitch.RefreshToken(users_keys.metadata.value);
     console.log(touser);
     const touser_id = await twitch.getId(touser);
     if (!touser_id) {
@@ -918,12 +909,11 @@ router.get("/spotify/current_playing/:channelID/:channel", async (req, env) => {
   const break_line = "────────────────────────────────";
   try {
     if (channelID == zihnee) {
-      const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-      const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
-      let response = (await Promise.all((users_keys.map(async(users_keys) => {
-        if ("spotify_21bzdcprfxsmlthwssmrnr2si" == users_keys.key) {
+      const auth_list = (await env.AUTH_USERS.list()).keys;
+      let response = (await Promise.all((auth_list.map(async(users_keys) => {
+        if ("spotify_21bzdcprfxsmlthwssmrnr2si" == users_keys.name) {
           const spotify = new spotifyApi(env.spotify_client_id, env.spotify_client_secret);
-          const access_token = await spotify.RefreshToken(users_keys.value);
+          const access_token = await spotify.RefreshToken(users_keys.metadata.value);
           const data = await spotify.GetCurrentlyPlayingTrack(access_token);
           const {item} = await data.json();
           const {artists} = item;
@@ -1385,13 +1375,12 @@ router.get("/imgur/user-oauth?", async (req, env) => {
 
 router.get("/imgur/me/gallery", async (req, env) => {
   const imgur = new imgurApi(env.imgur_client_id, env.imgur_client_secret);
-  const cloudflare = new cloudflareApi(env.cf_account_id, env.cf_api_token);
-  const users_keys = await cloudflare.getKeyValueList("AUTH_USERS");
+  const auth_list = (await env.AUTH_USERS.list()).keys;
   const imgur_user = "imgur_ahmedrangel";
   let json = [];
-  let imgur_data = (await Promise.all((users_keys.map(async(users_keys) => {
-    if (imgur_user == users_keys.key) {
-      const { access_token } = await imgur.RefreshToken(users_keys.value);
+  let imgur_data = (await Promise.all((auth_list.map(async(users_keys) => {
+    if (imgur_user == users_keys.name) {
+      const { access_token } = await imgur.RefreshToken(users_keys.metadata.value);
       const data = imgur.GetMyGallery(access_token);
       return data;
     }
