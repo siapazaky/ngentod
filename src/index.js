@@ -1067,7 +1067,6 @@ router.get("/lol/live-game?", async (req, env,) => {
     const game_type = riot.queueCase(live_game_data.gameQueueConfigId);
     if (live_game_data.participants) {
       const participants = live_game_data.participants;
-      console.log(participants);
       const team_size = participants.length;
       for (let i = 0; i < team_size; i++) {
         if (participants[i].teamId == 100) {
@@ -1086,7 +1085,7 @@ router.get("/lol/live-game?", async (req, env,) => {
     data = "No se ha especificado la región o la región es incorrecta. Manera correcta: !lolgame <invocador> <region>";
   }
 
-  const AdjustParticipants = async(participants, team, region, game_type, team_color, champion_data) => {
+  async function AdjustParticipants (participants, team, region, game_type, team_color, champion_data) {
     participants.championName = (String(jp.query(champion_data.data, `$..[?(@.key==${participants.championId})].name`)));
     let summonerName = participants.summonerName.charAt(0);
     let sn2 = participants.summonerName.slice(1);
