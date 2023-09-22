@@ -254,6 +254,14 @@ class riotApi {
     }
     return queue;
   }
+
+  championRole (id, merakiRates) {
+    const rates = merakiRates.data[id];
+    const propertyName = Object.keys(rates).reduce((maxProperty, currentProperty) => {
+      return rates[currentProperty].playRate > rates[maxProperty].playRate ? currentProperty : maxProperty;
+    }, Object.keys(rates)[0]);
+    return propertyName;
+  }
 }
 export default riotApi;
 

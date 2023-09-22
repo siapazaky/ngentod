@@ -1024,11 +1024,12 @@ router.get("/put-r2-chokis?", async (req, env, ctx) => {
 
 router.get("/lol/live-game?", async (req, env,) => {
   const { query } = req;
+  const roles = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
   let q_summoner;
   let q_region;
   let data = [];
-  let team1 = [];
-  let team2 = [];
+  let team1String = [], team1 = [];
+  let team2String = [], team2 = [];
   let tier = "";
   let rank = "";
   let division = "";
@@ -1077,7 +1078,66 @@ router.get("/lol/live-game?", async (req, env,) => {
           await AdjustParticipants(participants[i], team2, region, game_type.profile_rank_type, red_team, champion_data);
         }
       }
-      data = (`${game_type.queue_name} ${break_line} ${String(team1)} ${String(team2)}`).replaceAll(","," ");
+      const ratesFetch = await fetch("https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/championrates.json");
+      const merakiRates = await ratesFetch.json();
+      team1.forEach(t => {
+        t.role = riot.championRole(t.championId, merakiRates);
+      });
+      team2.forEach(t => {
+        t.role = riot.championRole(t.championId, merakiRates);
+      });
+      team1.sort((a, b) => {
+        const roleA = a.role;
+        const roleB = b.role;
+        const indexA = roles.indexOf(roleA);
+        const indexB = roles.indexOf(roleB);
+        if (indexA === -1 && indexB === -1) {
+          return 0;
+        }
+        if (indexA === -1) {
+          return 1;
+        }
+        if (indexB === -1) {
+          return -1;
+        }
+        return indexA - indexB;
+      });
+      team2.sort((a, b) => {
+        const roleA = a.role;
+        const roleB = b.role;
+        const indexA = roles.indexOf(roleA);
+        const indexB = roles.indexOf(roleB);
+        if (indexA === -1 && indexB === -1) {
+          return 0;
+        }
+        if (indexA === -1) {
+          return 1;
+        }
+        if (indexB === -1) {
+          return -1;
+        }
+        return indexA - indexB;
+      });
+      const indexT1 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+      const indexT2 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+      if (indexT1 !== -1) {
+        const itemToMove = team1.splice(indexT1, 1)[0];
+        team1.splice(1, 0, itemToMove);
+      }
+      if (indexT2 !== -1) {
+        const itemToMove = team2.splice(indexT2, 1)[0];
+        team2.splice(1, 0, itemToMove);
+      }
+      console.log(team1);
+      console.log(team2);
+      team1.forEach(t => {
+        team2String.push(`${t.teamColor}${t.summonerName}(${t.championName})${t.dots}${t.division}${t.lp}`);
+      });
+      team2.forEach(t => {
+        team2String.push(`${t.teamColor}${t.summonerName}(${t.championName})${t.dots}${t.division}${t.lp}`);
+      });
+
+      data = String((`${game_type.queue_name} ${break_line} ${String(team1String)} ${String(team2String)}`).replaceAll(","," "));
     } else {
       data = `${q_summoner} no se encuentra en partida ahora mismo. FallHalp `;
     }
@@ -1091,7 +1151,6 @@ router.get("/lol/live-game?", async (req, env,) => {
     let sn2 = participants.summonerName.slice(1);
     sn2 = sn2.toLowerCase();
     summonerName = summonerName + sn2;
-    console.log(participants.summonerId + " " + participants.summonerName);
     const ranked_data = await riot.RankedData(participants.summonerId, region);
     const current_rank_type = (String(jp.query(ranked_data, `$..[?(@.queueType=="${game_type}")].queueType`)));
     if (ranked_data.length != 0 && game_type == current_rank_type) {
@@ -1109,17 +1168,25 @@ router.get("/lol/live-game?", async (req, env,) => {
     }
     division = riot.divisionCase(riot.tierCase(tier).short, riot.rankCase(rank));
     let names_size = (42 - (String(participants.championName).length + String(participants.summonerName).length + 17));
-    console.log(names_size);
-    //const roles = String(jp.query(champion_data, `$..[?(@.name == "${participants.championName}")].tags`));
+    let teamObj = {
+      teamColor: team_color,
+      summonerName: summonerName.replaceAll(" ",""),
+      championName: participants.championName.replaceAll(" ",""),
+      championId: participants.championId,
+      spell1Id: participants.spell1Id,
+      spell2Id: participants.spell2Id,
+      division: division,
+      lp: lp,
+    };
     if (names_size <= 0) {
       names_size = 0;
       dots = "";
-      console.log("dots menor");
-      team.push(`${team_color}${summonerName.replaceAll(" ","")}(${participants.championName.replaceAll(" ","")})${dots}${division}${lp}`);
+      teamObj.dots = dots;
+      team.push(teamObj);
     } else {
       dots = "_";
-      console.log("dots mayor");
-      team.push(`${team_color}${summonerName.replaceAll(" ","")}(${participants.championName.replaceAll(" ","")})${dots.repeat(names_size)}${division}${lp}`);
+      teamObj.dots = dots.repeat(names_size);
+      team.push(teamObj);
     }
   };
   console.log(data);
