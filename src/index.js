@@ -1160,6 +1160,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   const roles = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
   const team1 = [], team2 = [];
   const match = {};
+  match.status_code = 404;
   const riot = new riotApi(env.riot_token);
   const region_route = await riot.RegionNameRouting(region);
   const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region.toLowerCase()}.json`);
@@ -1196,6 +1197,8 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
             division: division,
             tierFull: tierFull,
             eloValue: eloValue,
+            wins: r.wins,
+            losses: r.losses,
             role: role,
           });
         }
@@ -1215,11 +1218,12 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
         division: null,
         tierFull: null,
         eloValue: null,
+        wins: null,
+        losses: null,
         role: role,
       });
     }
   };
-
   if (live_game_data.participants) {
     const ratesFetch = await fetch("https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/championrates.json");
     const merakiRates = await ratesFetch.json();
@@ -1231,6 +1235,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
         await participantsHandler(p, merakiRates, game_type, team2, "red");
       }
     }
+    match.status_code = 200;
   }
   const t1Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team1, roles, "role"));
   const t2Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team2, roles, "role"));
@@ -1239,7 +1244,9 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   const eloAvg = (team) => {
     const eloArray = [];
     team.forEach(p => {
-      eloArray.push(p.eloValue);
+      if (p.eloValue) {
+        eloArray.push(p.eloValue);
+      }
     });
     const suma = eloArray.reduce((total, valor) => total + valor, 0);
     const promedio = Math.round(suma / eloArray.length);
@@ -1272,6 +1279,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   match.team2.eloAvg = {value: eloAvg2, tier: elo2.tier, rank: elo2.rank, rankInt: elo2.rankInt, division: elo2.division, tierFull: elo2.tierFull};
   match.queueId = live_game_data.gameQueueConfigId;
   match.gameType = game_type.full_name;
+  match.region = region.toUpperCase();
   return new Response(JSON.stringify(match));
 });
 
