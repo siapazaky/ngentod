@@ -1169,18 +1169,19 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   const summoner_data = await riot.SummonerDataByName(summoner, region_route);
   const summoner_id = summoner_data.id;
   const live_game_data = await riot.LiveGameData(summoner_id, region_route);
+  const game_type = riot.queueCase(live_game_data?.gameQueueConfigId);
   const participantsHandler = async(p, merakiRates, game_type, team, color) => {
     const ranked_data = await riot.RankedData(p.summonerId, region_route);
     const current_rank_type = (String(jp.query(ranked_data, `$..[?(@.queueType=="${game_type.profile_rank_type}")].queueType`)));
+    const role = riot.championRole(p.championId, merakiRates);
+    const championName = (String(jp.query(champion_data.data, `$..[?(@.key==${p.championId})].name`)));
     if (ranked_data.length !== 0 && game_type.profile_rank_type === current_rank_type) {
       ranked_data.forEach(r => {
         if (r.queueType === game_type.profile_rank_type) {
           const tierFull = riot.tierCase(r.tier).full.toUpperCase();
           const division = riot.divisionCase(riot.tierCase(r.tier).short, riot.rankCase(r.rank));
-          const championName = (String(jp.query(champion_data.data, `$..[?(@.key==${p.championId})].name`)));
           const rankInt = riot.rankCase(r.rank);
           const eloValue = eloValues[r.tier + " " + r.rank];
-          const role = riot.championRole(p.championId, merakiRates);
           team.push({
             teamColor: color,
             summonerName: p.summonerName,
@@ -1199,13 +1200,29 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
           });
         }
       });
+    } else {
+      team.push({
+        teamColor: color,
+        summonerName: p.summonerName,
+        championId: p.championId,
+        championName: championName,
+        spell1Id: p.spell1Id,
+        spell2Id: p.spell2Id,
+        lp: null,
+        tier: null,
+        rank: null,
+        rankInt: null,
+        division: null,
+        tierFull: null,
+        eloValue: null,
+        role: role,
+      });
     }
   };
 
   if (live_game_data.participants) {
     const ratesFetch = await fetch("https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/championrates.json");
     const merakiRates = await ratesFetch.json();
-    const game_type = riot.queueCase(live_game_data.gameQueueConfigId);
     const participants = live_game_data.participants;
     for (const p of participants) {
       if (p.teamId === 100) {
@@ -1253,6 +1270,8 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   const elo2 = eloTierRank(eloAvg2);
   match.team1.eloAvg = {value: eloAvg1, tier: elo1.tier, rank: elo1.rank, rankInt: elo1.rankInt, division: elo1.division, tierFull: elo1.tierFull};
   match.team2.eloAvg = {value: eloAvg2, tier: elo2.tier, rank: elo2.rank, rankInt: elo2.rankInt, division: elo2.division, tierFull: elo2.tierFull};
+  match.queueId = live_game_data.gameQueueConfigId;
+  match.gameType = game_type.full_name;
   return new Response(JSON.stringify(match));
 });
 
