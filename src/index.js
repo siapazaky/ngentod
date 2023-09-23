@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue } from "./funciones";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty } from "./funciones";
 import twitchApi from "./twitchApi";
 import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
@@ -1086,48 +1086,8 @@ router.get("/lol/live-game?", async (req, env,) => {
       team2.forEach(t => {
         t.role = riot.championRole(t.championId, merakiRates);
       });
-      team1.sort((a, b) => {
-        const roleA = a.role;
-        const roleB = b.role;
-        const indexA = roles.indexOf(roleA);
-        const indexB = roles.indexOf(roleB);
-        if (indexA === -1 && indexB === -1) {
-          return 0;
-        }
-        if (indexA === -1) {
-          return 1;
-        }
-        if (indexB === -1) {
-          return -1;
-        }
-        return indexA - indexB;
-      });
-      team2.sort((a, b) => {
-        const roleA = a.role;
-        const roleB = b.role;
-        const indexA = roles.indexOf(roleA);
-        const indexB = roles.indexOf(roleB);
-        if (indexA === -1 && indexB === -1) {
-          return 0;
-        }
-        if (indexA === -1) {
-          return 1;
-        }
-        if (indexB === -1) {
-          return -1;
-        }
-        return indexA - indexB;
-      });
-      const indexT1 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
-      const indexT2 = team2.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
-      if (indexT1 !== -1) {
-        const itemToMove = team1.splice(indexT1, 1)[0];
-        team1.splice(1, 0, itemToMove);
-      }
-      if (indexT2 !== -1) {
-        const itemToMove = team2.splice(indexT2, 1)[0];
-        team2.splice(1, 0, itemToMove);
-      }
+      team1 = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team1, roles, "role"));
+      team2 = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team2, roles, "role"));
       console.log(team1);
       console.log(team2);
       team1.forEach(t => {
@@ -1218,6 +1178,8 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
           const tierFull = riot.tierCase(r.tier).full.toUpperCase();
           const division = riot.divisionCase(riot.tierCase(r.tier).short, riot.rankCase(r.rank));
           const championName = (String(jp.query(champion_data.data, `$..[?(@.key==${p.championId})].name`)));
+          const rankInt = riot.rankCase(r.rank);
+          const eloValue = eloValues[r.tier + " " + r.rank];
           const role = riot.championRole(p.championId, merakiRates);
           team.push({
             teamColor: color,
@@ -1229,8 +1191,10 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
             lp: r.leaguePoints,
             tier: r.tier,
             rank: r.rank,
+            rankInt: rankInt,
             division: division,
             tierFull: tierFull,
+            eloValue: eloValue,
             role: role,
           });
         }
@@ -1251,50 +1215,44 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
       }
     }
   }
-  team1.sort((a, b) => {
-    const roleA = a.role;
-    const roleB = b.role;
-    const indexA = roles.indexOf(roleA);
-    const indexB = roles.indexOf(roleB);
-    if (indexA === -1 && indexB === -1) {
-      return 0;
+  const t1Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team1, roles, "role"));
+  const t2Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team2, roles, "role"));
+  match.team1 = { participants: t1Sorted };
+  match.team2 = { participants: t2Sorted };
+  const eloAvg = (team) => {
+    const eloArray = [];
+    team.forEach(p => {
+      eloArray.push(p.eloValue);
+    });
+    const suma = eloArray.reduce((total, valor) => total + valor, 0);
+    const promedio = Math.round(suma / eloArray.length);
+    return promedio;
+  };
+  const eloAvg1 = eloAvg(t1Sorted);
+  const eloAvg2 = eloAvg(t2Sorted);
+  const eloTierRank = (avg) => {
+    let obj = {tier: "DESCONOCIDO", rank: -1};
+    for (const eloName in eloValues) {
+      if (eloValues[eloName] === avg) {
+        const eloNameSplit = eloName.split(" ");
+        const eloTier = riot.tierCase(eloNameSplit[0]).full;
+        const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
+        obj = {
+          tier: eloNameSplit[0],
+          rank: eloRank,
+          rankInt: riot.rankCase(eloRank),
+          tierFull: eloTier.toUpperCase(),
+          division: riot.divisionCase(riot.tierCase(eloNameSplit[0]).short, riot.rankCase(eloRank))
+        };
+        break;
+      }
     }
-    if (indexA === -1) {
-      return 1;
-    }
-    if (indexB === -1) {
-      return -1;
-    }
-    return indexA - indexB;
-  });
-  team2.sort((a, b) => {
-    const roleA = a.role;
-    const roleB = b.role;
-    const indexA = roles.indexOf(roleA);
-    const indexB = roles.indexOf(roleB);
-    if (indexA === -1 && indexB === -1) {
-      return 0;
-    }
-    if (indexA === -1) {
-      return 1;
-    }
-    if (indexB === -1) {
-      return -1;
-    }
-    return indexA - indexB;
-  });
-  const indexT1 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
-  const indexT2 = team2.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
-  if (indexT1 !== -1) {
-    const itemToMove = team1.splice(indexT1, 1)[0];
-    team1.splice(1, 0, itemToMove);
-  }
-  if (indexT2 !== -1) {
-    const itemToMove = team2.splice(indexT2, 1)[0];
-    team2.splice(1, 0, itemToMove);
-  }
-  match.team1 = team1;
-  match.team2 = team2;
+    return obj;
+  };
+  const elo1 = eloTierRank(eloAvg1);
+  const elo2 = eloTierRank(eloAvg2);
+  match.team1.eloAvg = {value: eloAvg1, tier: elo1.tier, rank: elo1.rank, rankInt: elo1.rankInt, division: elo1.division, tierFull: elo1.tierFull};
+  match.team2.eloAvg = {value: eloAvg2, tier: elo2.tier, rank: elo2.rank, rankInt: elo2.rankInt, division: elo2.division, tierFull: elo2.tierFull};
   return new Response(JSON.stringify(match));
 });
 

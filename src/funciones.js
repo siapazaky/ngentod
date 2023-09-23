@@ -126,3 +126,20 @@ export const KVSorterByValue = (KVarray) => {
     }
   });
 };
+
+export const jsonCustomSorterByProperty = (array, customOrderArray, property) => {
+  return array.sort((a, b) => {
+    const indexA = customOrderArray.indexOf(a[property]);
+    const indexB = customOrderArray.indexOf(b[property]);
+    if (indexA === -1 && indexB === -1) {
+      return 0;
+    }
+    if (indexA === -1) {
+      return 1;
+    }
+    if (indexB === -1) {
+      return -1;
+    }
+    return indexA - indexB;
+  });
+};

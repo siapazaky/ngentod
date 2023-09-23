@@ -262,6 +262,15 @@ class riotApi {
     }, Object.keys(rates)[0]);
     return propertyName;
   }
+
+  fixJsonJungleSort (array) {
+    const index = array.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+    if (index !== -1) {
+      const itemToMove = array.splice(index, 1)[0];
+      array.splice(1, 0, itemToMove);
+    }
+    return array;
+  }
 }
 export default riotApi;
 
