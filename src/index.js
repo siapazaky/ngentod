@@ -1396,7 +1396,7 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
   const samples = [], elo_samples = [];
   const region_route = await riot.RegionNameRouting(region);
   if (summoner && region_route !== false && region !== undefined) {
-    const count = 4;
+    const count = 3;
     const summoner_data = await riot.SummonerDataByName(summoner, region_route);
     if (summoner_data.status == undefined) {
       const summoner_id = summoner_data.id;
