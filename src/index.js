@@ -1119,7 +1119,7 @@ router.get("/lol/live-game?", async (req, env,) => {
         return indexA - indexB;
       });
       const indexT1 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
-      const indexT2 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+      const indexT2 = team2.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
       if (indexT1 !== -1) {
         const itemToMove = team1.splice(indexT1, 1)[0];
         team1.splice(1, 0, itemToMove);
@@ -1193,6 +1193,110 @@ router.get("/lol/live-game?", async (req, env,) => {
   return new Response(data);
 });
 
+router.get("/lol/live-game-for-discord?", async (req, env,) => {
+  const { query } = req;
+  const region = (query.region).toLowerCase();
+  const summoner = query.summoner;
+  const roles = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+  const team1 = [], team2 = [];
+  const match = {};
+  const riot = new riotApi(env.riot_token);
+  const region_route = await riot.RegionNameRouting(region);
+  const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region.toLowerCase()}.json`);
+  const ddversions_data = await ddversions.json();
+  const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
+  const champion_data = await champion_list.json();
+  const summoner_data = await riot.SummonerDataByName(summoner, region_route);
+  const summoner_id = summoner_data.id;
+  const live_game_data = await riot.LiveGameData(summoner_id, region_route);
+  const participantsHandler = async(p, merakiRates, game_type, team, color) => {
+    const ranked_data = await riot.RankedData(p.summonerId, region_route);
+    const current_rank_type = (String(jp.query(ranked_data, `$..[?(@.queueType=="${game_type.profile_rank_type}")].queueType`)));
+    if (ranked_data.length !== 0 && game_type.profile_rank_type === current_rank_type) {
+      ranked_data.forEach(r => {
+        if (r.queueType === game_type.profile_rank_type) {
+          const tierFull = riot.tierCase(r.tier).full.toUpperCase();
+          const division = riot.divisionCase(riot.tierCase(r.tier).short, riot.rankCase(r.rank));
+          const championName = (String(jp.query(champion_data.data, `$..[?(@.key==${p.championId})].name`)));
+          const role = riot.championRole(p.championId, merakiRates);
+          team.push({
+            teamColor: color,
+            summonerName: p.summonerName,
+            championId: p.championId,
+            championName: championName,
+            spell1Id: p.spell1Id,
+            spell2Id: p.spell2Id,
+            lp: r.leaguePoints,
+            tier: r.tier,
+            rank: r.rank,
+            division: division,
+            tierFull: tierFull,
+            role: role,
+          });
+        }
+      });
+    }
+  };
+
+  if (live_game_data.participants) {
+    const ratesFetch = await fetch("https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/championrates.json");
+    const merakiRates = await ratesFetch.json();
+    const game_type = riot.queueCase(live_game_data.gameQueueConfigId);
+    const participants = live_game_data.participants;
+    for (const p of participants) {
+      if (p.teamId === 100) {
+        await participantsHandler(p, merakiRates, game_type, team1, "blue");
+      } else if (p.teamId === 200) {
+        await participantsHandler(p, merakiRates, game_type, team2, "red");
+      }
+    }
+  }
+  team1.sort((a, b) => {
+    const roleA = a.role;
+    const roleB = b.role;
+    const indexA = roles.indexOf(roleA);
+    const indexB = roles.indexOf(roleB);
+    if (indexA === -1 && indexB === -1) {
+      return 0;
+    }
+    if (indexA === -1) {
+      return 1;
+    }
+    if (indexB === -1) {
+      return -1;
+    }
+    return indexA - indexB;
+  });
+  team2.sort((a, b) => {
+    const roleA = a.role;
+    const roleB = b.role;
+    const indexA = roles.indexOf(roleA);
+    const indexB = roles.indexOf(roleB);
+    if (indexA === -1 && indexB === -1) {
+      return 0;
+    }
+    if (indexA === -1) {
+      return 1;
+    }
+    if (indexB === -1) {
+      return -1;
+    }
+    return indexA - indexB;
+  });
+  const indexT1 = team1.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+  const indexT2 = team2.findIndex(item => item.spell1Id === 11 || item.spell2Id === 11);
+  if (indexT1 !== -1) {
+    const itemToMove = team1.splice(indexT1, 1)[0];
+    team1.splice(1, 0, itemToMove);
+  }
+  if (indexT2 !== -1) {
+    const itemToMove = team2.splice(indexT2, 1)[0];
+    team2.splice(1, 0, itemToMove);
+  }
+  match.team1 = team1;
+  match.team2 = team2;
+  return new Response(JSON.stringify(match));
+});
 
 router.get("/lol/profile-for-discord?", async (req, env,) => {
   const { query } = req;
