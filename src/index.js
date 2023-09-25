@@ -1274,6 +1274,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
     match.queueId = live_game_data.gameQueueConfigId;
     match.gameType = game_type.full_name;
     match.region = region.toUpperCase();
+    match.startTime = live_game_data.gameStartTime;
     return new JsResponse(JSON.stringify(match));
   }
   return new JsResponse(JSON.stringify(match));
