@@ -1211,15 +1211,6 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
         championName: championName,
         spell1Id: p.spell1Id,
         spell2Id: p.spell2Id,
-        lp: null,
-        tier: null,
-        rank: null,
-        rankInt: null,
-        division: null,
-        tierFull: null,
-        eloValue: null,
-        wins: null,
-        losses: null,
         role: role,
       });
     }
