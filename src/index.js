@@ -1183,6 +1183,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
           const division = riot.divisionCase(riot.tierCase(r.tier).short, riot.rankCase(r.rank));
           const rankInt = riot.rankCase(r.rank);
           const eloValue = eloValues[r.tier + " " + r.rank];
+          const rank = r.tier !== "MASTER" && r.tier !== "GRANDMASTER" && r.tier !== "CHALLENGER" ? r.rank : "";
           team.push({
             teamColor: color,
             summonerName: p.summonerName,
@@ -1192,7 +1193,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
             spell2Id: p.spell2Id,
             lp: r.leaguePoints,
             tier: r.tier,
-            rank: r.rank,
+            rank: rank,
             rankInt: rankInt,
             division: division,
             tierFull: tierFull,
@@ -1227,51 +1228,55 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
       }
     }
     match.status_code = 200;
+    const t1Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team1, roles, "role"));
+    const t2Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team2, roles, "role"));
+    match.team1 = { participants: t1Sorted };
+    match.team2 = { participants: t2Sorted };
+    const eloAvg = (team) => {
+      const eloArray = [];
+      team.forEach(p => {
+        if (p.eloValue) {
+          eloArray.push(p.eloValue);
+        }
+      });
+      const suma = eloArray.reduce((total, valor) => total + valor, 0);
+      const promedio = Math.round(suma / eloArray.length);
+      return promedio;
+    };
+    const eloAvg1 = eloAvg(t1Sorted);
+    const eloAvg2 = eloAvg(t2Sorted);
+    const eloTierRank = (avg) => {
+      let obj = {tier: "DESCONOCIDO", rank: -1};
+      for (const eloName in eloValues) {
+        if (eloValues[eloName] === avg) {
+          const eloNameSplit = eloName.split(" ");
+          const eloTier = riot.tierCase(eloNameSplit[0]).full;
+          const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
+          obj = {
+            tier: eloNameSplit[0],
+            rank: eloRank,
+            rankInt: riot.rankCase(eloRank),
+            tierFull: eloTier.toUpperCase(),
+            division: riot.divisionCase(riot.tierCase(eloNameSplit[0]).short, riot.rankCase(eloRank))
+          };
+          break;
+        }
+      }
+      return obj;
+    };
+    const elo1 = eloTierRank(eloAvg1);
+    const elo2 = eloTierRank(eloAvg2);
+    const eloObj = (arr, eloAvg) => {
+      return {value: eloAvg, tier: arr.tier, rank: arr.rank, rankInt: arr.rankInt, division: arr.division, tierFull: arr.tierFull};
+    };
+    match.team1.eloAvg = eloObj(elo1, eloAvg1);
+    match.team2.eloAvg = eloObj(elo2, eloAvg2);
+    match.queueId = live_game_data.gameQueueConfigId;
+    match.gameType = game_type.full_name;
+    match.region = region.toUpperCase();
+    return new JsResponse(JSON.stringify(match));
   }
-  const t1Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team1, roles, "role"));
-  const t2Sorted = riot.fixJsonJungleSort(jsonCustomSorterByProperty(team2, roles, "role"));
-  match.team1 = { participants: t1Sorted };
-  match.team2 = { participants: t2Sorted };
-  const eloAvg = (team) => {
-    const eloArray = [];
-    team.forEach(p => {
-      if (p.eloValue) {
-        eloArray.push(p.eloValue);
-      }
-    });
-    const suma = eloArray.reduce((total, valor) => total + valor, 0);
-    const promedio = Math.round(suma / eloArray.length);
-    return promedio;
-  };
-  const eloAvg1 = eloAvg(t1Sorted);
-  const eloAvg2 = eloAvg(t2Sorted);
-  const eloTierRank = (avg) => {
-    let obj = {tier: "DESCONOCIDO", rank: -1};
-    for (const eloName in eloValues) {
-      if (eloValues[eloName] === avg) {
-        const eloNameSplit = eloName.split(" ");
-        const eloTier = riot.tierCase(eloNameSplit[0]).full;
-        const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
-        obj = {
-          tier: eloNameSplit[0],
-          rank: eloRank,
-          rankInt: riot.rankCase(eloRank),
-          tierFull: eloTier.toUpperCase(),
-          division: riot.divisionCase(riot.tierCase(eloNameSplit[0]).short, riot.rankCase(eloRank))
-        };
-        break;
-      }
-    }
-    return obj;
-  };
-  const elo1 = eloTierRank(eloAvg1);
-  const elo2 = eloTierRank(eloAvg2);
-  match.team1.eloAvg = {value: eloAvg1, tier: elo1.tier, rank: elo1.rank, rankInt: elo1.rankInt, division: elo1.division, tierFull: elo1.tierFull};
-  match.team2.eloAvg = {value: eloAvg2, tier: elo2.tier, rank: elo2.rank, rankInt: elo2.rankInt, division: elo2.division, tierFull: elo2.tierFull};
-  match.queueId = live_game_data.gameQueueConfigId;
-  match.gameType = game_type.full_name;
-  match.region = region.toUpperCase();
-  return new Response(JSON.stringify(match));
+  return new JsResponse(JSON.stringify(match));
 });
 
 router.get("/lol/profile-for-discord?", async (req, env,) => {
