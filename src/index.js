@@ -1352,8 +1352,8 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       const champion_data = await champion_list.json();
       for (let i = 0; i < matchesId.length; i++) {
         const match_data = await riot.getMatchFromId(matchesId[i], regional_routing);
-        const gameEndTimestamp = match_data.info.gameEndTimestamp;
-        const queueId = match_data.info.queueId;
+        const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
+        const queueId = match_data?.info?.queueId;
         const queueName = riot.queueCase(queueId);
         const participantId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`));
         const championId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`));
