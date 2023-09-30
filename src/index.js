@@ -1367,9 +1367,20 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
           const remake = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`));
           const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
           if (summoner_id == participantId) {
-            match_history.push({orderId: i, gameEndTimestamp: gameEndTimestamp, queueName: queueName.full_name, championName: championName,
-              kills: kills, deaths: deaths, assists: assists, summoner1Id: summoner1Id, summoner2Id: summoner2Id, win: win,
-              remake: remake, strTime: getDateAgoFromTimeStamp(gameEndTimestamp)});
+            match_history.push({
+              orderId: i,
+              gameEndTimestamp: gameEndTimestamp,
+              queueName: queueName.full_name,
+              championName: championName,
+              kills: kills,
+              deaths: deaths,
+              assists: assists,
+              summoner1Id: summoner1Id,
+              summoner2Id: summoner2Id,
+              win: win,
+              remake: remake,
+              strTime: getDateAgoFromTimeStamp(gameEndTimestamp)
+            });
           }
         }
       }
