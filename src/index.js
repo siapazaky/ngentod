@@ -688,9 +688,8 @@ router.get("/twitch/user-oauth?", async (req, env) => {
     const key = user_id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
     return new JsResponse(`Usuario autenticado: ${login}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
-  } else {
-    return new JsResponse("Error. Authentication failed.");
   }
+  return new JsResponse("Error. Authentication failed.");
 });
 
 // Nightbot command: get Top Bits Cheerers Leaderboard with 3 pages
@@ -752,27 +751,26 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   const break_line = "────────────────────────────────";
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
-    let response = `El canal contiene actualmente las siguientes etiquetas: ${break_line} ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
-    return new JsResponse(response);
-  } else {
-    const auth_list = (await env.AUTH_USERS.list()).keys;
-    let response = (await Promise.all((auth_list.map(async(users_keys) => {
-      if (channelID == users_keys.name) {
-        const access_token = await twitch.RefreshToken(users_keys.metadata.value);
-        const tags = await twitch.SetTags(access_token, users_keys.name, query_tags);
-        if (tags.status === 400 && tags_length < 10) {
-          console.log(tags);
-          return "Error. Una etiqueta contiene caracteres inválidos. Las etiquetas deben estar separadas por comas y evitar caracteres especiales o símbolos.";
-        } else if (tags.status === 400 && tags_length >= 10) {
-          return "Error. La cantidad máxima de etiquetas que puedes establecer es de 10.";
-        } else {
-          let settags = String(query_tags).replaceAll(/,/g,", ");
-          return `Etiquetas del canal actualizadas satisfactoriamente: ${break_line} ${settags}`;
-        }
-      }
-    })))).filter(users_keys => users_keys);
+    const response = `El canal contiene actualmente las siguientes etiquetas: ${break_line} ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
     return new JsResponse(response);
   }
+  const auth_list = (await env.AUTH_USERS.list()).keys;
+  const response = (await Promise.all((auth_list.map(async(users_keys) => {
+    if (channelID == users_keys.name) {
+      const access_token = await twitch.RefreshToken(users_keys.metadata.value);
+      const tags = await twitch.SetTags(access_token, users_keys.name, query_tags);
+      if (tags.status === 400 && tags_length < 10) {
+        console.log(tags);
+        return "Error. Una etiqueta contiene caracteres inválidos. Las etiquetas deben estar separadas por comas y evitar caracteres especiales o símbolos.";
+      } else if (tags.status === 400 && tags_length >= 10) {
+        return "Error. La cantidad máxima de etiquetas que puedes establecer es de 10.";
+      } else {
+        let settags = String(query_tags).replaceAll(/,/g,", ");
+        return `Etiquetas del canal actualizadas satisfactoriamente: ${break_line} ${settags}`;
+      }
+    }
+  })))).filter(users_keys => users_keys);
+  return new JsResponse(response);
 });
 
 // Nightbot command: Add Mod
