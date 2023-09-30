@@ -1352,23 +1352,25 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       const champion_data = await champion_list.json();
       for (let i = 0; i < matchesId.length; i++) {
         const match_data = await riot.getMatchFromId(matchesId[i], regional_routing);
-        const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
-        const queueId = match_data?.info?.queueId;
-        const queueName = riot.queueCase(queueId);
-        const participantId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`));
-        const championId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`));
-        const championName = String(jp.query(champion_data.data, `$..[?(@.key==${championId})].name`));
-        const kills = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`));
-        const deaths = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`));
-        const assists = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`));
-        const summoner1Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`));
-        const summoner2Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`));
-        const remake = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`));
-        const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
-        if (summoner_id == participantId) {
-          match_history.push({orderId: i, gameEndTimestamp: gameEndTimestamp, queueName: queueName.full_name, championName: championName,
-            kills: kills, deaths: deaths, assists: assists, summoner1Id: summoner1Id, summoner2Id: summoner2Id, win: win,
-            remake: remake, strTime: getDateAgoFromTimeStamp(gameEndTimestamp)});
+        if (match_data?.status?.status_code !== 404) {
+          const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
+          const queueId = match_data?.info?.queueId;
+          const queueName = riot.queueCase(queueId);
+          const participantId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`));
+          const championId = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`));
+          const championName = String(jp.query(champion_data.data, `$..[?(@.key==${championId})].name`));
+          const kills = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`));
+          const deaths = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`));
+          const assists = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`));
+          const summoner1Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`));
+          const summoner2Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`));
+          const remake = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`));
+          const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
+          if (summoner_id == participantId) {
+            match_history.push({orderId: i, gameEndTimestamp: gameEndTimestamp, queueName: queueName.full_name, championName: championName,
+              kills: kills, deaths: deaths, assists: assists, summoner1Id: summoner1Id, summoner2Id: summoner2Id, win: win,
+              remake: remake, strTime: getDateAgoFromTimeStamp(gameEndTimestamp)});
+          }
         }
       }
       profile_data.matchesHistory = match_history;
