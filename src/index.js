@@ -1053,7 +1053,7 @@ router.get("/lol/live-game?", async (req, env,) => {
   const riot = new riotApi(env.riot_token);
   const break_line = "─────────────────────────";
   console.log(q_region);
-  const region = await riot.RegionNameRouting(q_region);
+  const region = riot.RegionNameRouting(q_region);
   console.log(region);
   if (q_summoner && region !== false && q_region !== undefined) {
     const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${q_region.toLowerCase()}.json`);
@@ -1160,7 +1160,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   const match = {};
   match.status_code = 404;
   const riot = new riotApi(env.riot_token);
-  const region_route = await riot.RegionNameRouting(region);
+  const region_route = riot.RegionNameRouting(region);
   const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region.toLowerCase()}.json`);
   const ddversions_data = await ddversions.json();
   const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
@@ -1286,7 +1286,7 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
   let profile_data;
   const rank_profile = [], match_history = [];
   const riot = new riotApi(env.riot_token);
-  const region_route = await riot.RegionNameRouting(region);
+  const region_route = riot.RegionNameRouting(region);
   console.log(region);
   console.log(region_route);
   if (summoner && region_route !== false && region !== undefined) {
@@ -1402,7 +1402,7 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
   const queueCase = riot.queueCase(queueId);
   let elo_data;
   const samples = [], elo_samples = [];
-  const region_route = await riot.RegionNameRouting(region);
+  const region_route = riot.RegionNameRouting(region);
   if (summoner && region_route !== false && region !== undefined) {
     const count = 3;
     const summoner_data = await riot.SummonerDataByName(summoner, region_route);
@@ -2059,6 +2059,39 @@ router.get("/followage/:channel/:touser", async (req, env) => {
   })))).filter(users_keys => users_keys);
   console.log(response);
   return new JsResponse(response);
+});
+
+// Lol Champion Masteries
+router.get("/lol/masteries-for-discord?", async (req, env) => {
+  const count = 10, riot = new riotApi(env.riot_token);
+  const { query } = req;
+  const summoner = query.summoner;
+  const region = riot.RegionNameRouting(query.region);
+  const { name, id, profileIconId } = await riot.SummonerDataByName(summoner, region);
+  const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${query.region.toLowerCase()}.json`);
+  const ddversions_data = await ddversions.json();
+  const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
+  const champion_data = await champion_list.json();
+  const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${profileIconId}.png`;
+  const masteriesData = await riot.getChampionMasteries(id, region, count);
+  const data = {
+    summoner: name,
+    region: query.region,
+    iconUrl: icon,
+  };
+  const masteries = [];
+  masteriesData.forEach(m => {
+    const championName = String(jp.query(champion_data.data, `$..[?(@.key==${m.championId})].name`));
+    masteries.push({
+      level: m.championLevel,
+      points: m.championPoints,
+      chestGranted: m.chestGranted,
+      championId: m.championId,
+      championName: championName
+    });
+  });
+  data.masteries = masteries;
+  return new JsResponse(JSON.stringify(data));
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));

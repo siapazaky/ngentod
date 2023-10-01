@@ -4,7 +4,7 @@ class riotApi {
     this.riot_token = riot_token;
   }
 
-  async RegionNameRouting (region) {
+  RegionNameRouting (region) {
     region = region.toLowerCase();
     switch (region) {
     case "lan":
@@ -103,8 +103,14 @@ class riotApi {
     return response;
   }
 
-  async getChellengesData(puuid, regional_routing) {
-    const data = await fetch(`https://${regional_routing}.api.riotgames.com/lol/challenges/v1/player-data/${puuid}?api_key=${this.riot_token}`);
+  async getChellengesData(puuid, region) {
+    const data = await fetch(`https://${region}.api.riotgames.com/lol/challenges/v1/player-data/${puuid}?api_key=${this.riot_token}`);
+    const response = await data.json();
+    return response;
+  }
+
+  async getChampionMasteries(summoner_id, region, count) {
+    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summoner_id}/top?count=${count}&api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
