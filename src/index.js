@@ -2074,10 +2074,12 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const champion_data = await champion_list.json();
   const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${profileIconId}.png`;
   const masteriesData = await riot.getChampionMasteries(id, region, count);
+  const masteryScore = await riot.getChampionMasteryScore(id, region);
   const data = {
     summonerName: name,
     region: query.region,
     profileIconUrl: icon,
+    score: masteryScore
   };
   const masteries = [];
   masteriesData.forEach(m => {

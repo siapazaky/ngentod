@@ -115,6 +115,12 @@ class riotApi {
     return response;
   }
 
+  async getChampionMasteryScore(summoner_id, region) {
+    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
+    const response = await data.json();
+    return response;
+  }
+
   tierCase (option) {
     let tier = {};
     switch (option) {
