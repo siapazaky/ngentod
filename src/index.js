@@ -2067,7 +2067,10 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const { query } = req;
   const summoner = query.summoner;
   const region = riot.RegionNameRouting(query.region);
-  const { name, id, profileIconId } = await riot.SummonerDataByName(summoner, region);
+  const { name, id, profileIconId, status } = await riot.SummonerDataByName(summoner, region);
+  if (status?.status_code === 404) {
+    return new JsResponse(JSON.stringify({status_code: 404}));
+  }
   const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${query.region.toLowerCase()}.json`);
   const ddversions_data = await ddversions.json();
   const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
@@ -2079,17 +2082,20 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
     summonerName: name,
     region: query.region,
     profileIconUrl: icon,
-    score: masteryScore
+    score: masteryScore,
+    status_code: 200
   };
   const masteries = [];
   masteriesData.forEach(m => {
     const championName = String(jp.query(champion_data.data, `$..[?(@.key==${m.championId})].name`));
+    const usadoHace = getDateAgoFromTimeStamp(m.lastPlayTime);
     masteries.push({
       level: m.championLevel,
       points: m.championPoints,
       chestGranted: m.chestGranted,
       championId: m.championId,
-      championName: championName
+      championName: championName,
+      usadoHace: usadoHace
     });
   });
   data.masteries = masteries;
