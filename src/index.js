@@ -2077,7 +2077,7 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const data = {
     summonerName: name,
     region: query.region,
-    iconUrl: icon,
+    profileIconUrl: icon,
   };
   const masteries = [];
   masteriesData.forEach(m => {
