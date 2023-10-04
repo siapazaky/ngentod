@@ -1675,7 +1675,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
   const scrap = async () => {
     const { query } = req;
     const _cookie = env.fb_cookie;
-    const _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+    const _userAgent = env.user_agent;
     const url = decodeURIComponent(query.url);
     const dataFetch = async (URL, is_reel) => {
       const response = await fetch(URL, {
