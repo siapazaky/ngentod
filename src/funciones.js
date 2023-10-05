@@ -3,19 +3,15 @@ export const getRandom = (max) => {
 };
 
 export const getDateAgoFromTimeStamp = (timestamp) => {
-  let timestampEspecifico = timestamp;
-  let fechaActual = new Date().getTime();
-  let diferencia = fechaActual - timestampEspecifico;
-
-  let segundos = Math.floor(diferencia / 1000);
-  let minutos = Math.floor(segundos / 60);
-  let horas = Math.floor(minutos / 60);
-  let dias = Math.floor(horas / 24);
-  let meses = Math.floor(dias / 30);
-
+  const fechaActual = new Date().getTime();
+  const diferencia = fechaActual - timestamp;
+  const segundos = Math.floor(diferencia / 1000);
+  const minutos = Math.floor(segundos / 60);
+  const horas = Math.floor(minutos / 60);
+  const dias = Math.floor(horas / 24);
+  const meses = Math.floor(dias / 30);
   let unidadTiempo;
   let cantidad;
-
   if (meses > 0) {
     unidadTiempo = "mes";
     cantidad = meses;
@@ -32,7 +28,6 @@ export const getDateAgoFromTimeStamp = (timestamp) => {
     unidadTiempo = "segundo";
     cantidad = segundos;
   }
-
   // Verificar singular o plural
   if (cantidad !== 1) {
     if (unidadTiempo == "mes") {
@@ -41,8 +36,7 @@ export const getDateAgoFromTimeStamp = (timestamp) => {
       unidadTiempo += "s";
     }
   }
-
-  let strTime = `${cantidad} ${unidadTiempo}`;
+  const strTime = `${cantidad} ${unidadTiempo}`;
   return strTime;
 };
 
