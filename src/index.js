@@ -1708,7 +1708,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
           if (el[0] == "RelayPrefetchedStreamCache") {
             const step1 = el[el.length - 1];
-            caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text.replaceAll(/\n\n/g, "\n");
+            caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text?.replaceAll(/\n\n/g, "\n") ?? null;
           }
         });
         json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
@@ -1739,13 +1739,13 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
           if (el[0] == "RelayPrefetchedStreamCache") {
             const step1 = el[el.length - 1];
             const step2 = step1[step1.length - 1]?.__bbox?.result?.data?.video?.creation_story;
-            data = step2.short_form_video_context;
-            caption = step2.message.text;
+            data = step2?.short_form_video_context;
+            caption = step2?.message?.text ?? null;
           }
         });
         const json_object = {
           short_url: data?.shareable_url.replace("www.",""),
-          video_url: data?.playback_video.browser_native_hd_url,
+          video_url: data?.playback_video?.browser_native_hd_url,
           caption: caption,
           status: 200
         };
@@ -2052,9 +2052,9 @@ router.get("/followage/:channel/:touser", async (req, env) => {
       const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
       if (data?.followed_at) {
         const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-        return `${touser} ha estado siguiendo a ${channel} por ${unitsString}`;
+        return `@${touser} ha estado siguiendo a ${channel} por ${unitsString}`;
       }
-      return `${touser} no está siguiendo a ${channel}`;
+      return `@${touser} no está siguiendo a ${channel}`;
     }
   })))).filter(users_keys => users_keys);
   console.log(response);
