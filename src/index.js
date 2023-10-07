@@ -1688,7 +1688,6 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
           "sec-fetch-user": "?1",
           "sec-fetch-mode": "navigate",
           "upgrade-insecure-requests": "1",
-          "authority": "www.facebook.com"
         }
       });
       const html = await response.text();
