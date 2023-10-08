@@ -837,8 +837,8 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
 });
 
 // Nightbot command: Shoutout
-router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
-  const { user, channel_id, touser } = req.params;
+router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
+  const { user, channel ,channel_id, touser } = req.params;
   if (user.toLowerCase() === touser.toLowerCase()) {
     return new JsResponse(`${user} -> Debe mencionar a un streamer`);
   }
@@ -855,7 +855,7 @@ router.get("/shoutout/:user/:channel_id/:touser", async (req, env) => {
     const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
     console.log(shoutout);
     if (shoutout?.status == 400) {
-      return `${user} -> El streamer no está en vivo o no tiene uno o más espectadores.`;
+      return `${user} -> ${channel} no está en vivo o no tiene espectadores.`;
     } else if (shoutout?.status == 429) {
       return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
     }
