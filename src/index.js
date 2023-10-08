@@ -862,7 +862,6 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
     return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
 
   })))).filter(users_keys => users_keys);
-
   return new JsResponse(response);
 });
 
