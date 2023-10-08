@@ -860,7 +860,6 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
       return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
     }
     return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
-
   })))).filter(users_keys => users_keys);
   return new JsResponse(response);
 });
