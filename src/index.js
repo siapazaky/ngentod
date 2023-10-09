@@ -588,7 +588,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
   let url_fetch;
   let cloudinary_url = "";
   url = decodeURIComponent(url);
-  const filename = url.replace(/^.*[\\\/]/, "");
+  const filename = url.replace(/^.*[\\\/]/, "").replace(/\?.*$/, "");
   const file_extension = filename.replace(/^.*\./, "");
   const filename_id = url.replace(/^.*[\\\/]/, "").replace(/\.[^/.]+$/, "");
   const fdCloudinary = new FormData();
