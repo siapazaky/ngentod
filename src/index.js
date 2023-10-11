@@ -105,18 +105,18 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
       let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
       if (percent < 40) {
         if (id_user == id_touser) {
-          mensaje = `${user}, Cómo? te quieres cog*r a ti mismo? angarMonkas`;
+          mensaje = `@${user} -> Cómo? te quieres cog*r a ti mismo? angarMonkas`;
         } else {
           counter = counter ? counter + 1 : 1;
           await env.FUCK.put(key, counter, {metadata: {value: counter},});
           const veces = counter === 1 ? "vez" : "veces";
-          mensaje = `${user} le ha dado tremenda cog*da a ${touser}. Se han cog*do a ${touser} ${counter} ${veces} en total. ${emote}`;
+          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`;
         }
       } else {
         if (id_user == id_touser) {
-          mensaje = `${user}, Cómo? te quieres cog*r a ti mismo? angarMonkas`;
+          mensaje = `@${user} -> Cómo? te quieres cog*r a ti mismo? angarMonkas`;
         } else {
-          mensaje = `${user}, ${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`;
+          mensaje = `@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`;
         }
       }
     } else {
@@ -222,7 +222,7 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
 router.get("/hug/:user/:channelID/:touser", async (req, env) => {
   const { user, touser, channelID } = req.params;
   let mensaje = null;
-  const error_msg = `${user}, El usuario que has mencionado no existe. FallHalp`;
+  const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   let id_angar = "27457904";
   let id_ahmed = "71492353"; // tests
@@ -263,7 +263,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
 router.get("/spank/:user/:channelID/:touser", async (req, env) => {
   const { user, touser, channelID } = req.params;
   let mensaje = null;
-  const error_msg = `${user}, El usuario que has mencionado no existe. FallHalp`;
+  const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   try {
     const id_user = await twitch.getId(user);
