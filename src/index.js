@@ -49,7 +49,7 @@ router.get("/educar/:user/:channel/:touser", async (req, env) => {
 router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
   const { user, touser, channelID } = req.params;
   let mensaje = null;
-  const error_msg = `${user}, El usuario que has mencionado no existe. FallHalp`;
+  const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   let id_angar = "27457904";
   let id_ahmed = "71492353"; // tests
@@ -63,21 +63,21 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
       let emotes_arr = ["angarShy","angarH", "angarJu", "angarOk"];
       let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
       if (id_user == id_touser) {
-        mensaje = `${user}, Acaso estás tratando de besarte a ti mismo? angarJu`;
+        mensaje = `@${user} -> Acaso estás tratando de besarte a ti mismo? angarJu`;
       } else {
         counter = counter ? counter + 1 : 1;
         await env.KISS.put(key, counter, {metadata: {value: counter},});
         const veces = counter === 1 ? "beso" : "besos";
-        mensaje = `${user} le ha dado un beso a ${touser}. ${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
+        mensaje = `@${user} -> le has dado un beso a @${touser} . @${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
       }
     } else {
       if (id_user == id_touser) {
-        mensaje = `${user}, Acaso estás tratando de besarte a ti mismo? BegWan`;
+        mensaje = `@${user} -> Acaso estás tratando de besarte a ti mismo? BegWan`;
       } else {
         counter = counter ? counter + 1 : 1;
         await env.KISS.put(key, counter, {metadata: {value: counter},});
         const veces = counter === 1 ? "beso" : "besos";
-        mensaje = `${user} le ha dado un beso a ${touser}. ${touser} ha recibido ${counter} ${veces} en total. BegWan`;
+        mensaje = `@${user} -> le ha dado un beso a @${touser} . @${touser} ha recibido ${counter} ${veces} en total. BegWan`;
       }
     }
   } catch (e) {
