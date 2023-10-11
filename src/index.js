@@ -273,18 +273,18 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
     let counter = Number(await env.SPANK.get(key));
     let emotes_arr = ["angarRico","Kreygasm","Jebaited","TakeNRG"];
     let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
-    let responses_arr = ["le ha dado una nalgada","le ha marcado sus manos en las nalgas","le ha cacheteado la nalga derecha","le ha cacheteado la nalga izquierda","le ha dado una nalgada con sus dos manos"];
+    let responses_arr = ["le has dado una nalgada","le has marcado sus manos en las nalgas","le has cacheteado la nalga derecha","le has cacheteado la nalga izquierda","le has dado una nalgada con sus dos manos"];
     let accion = responses_arr[Math.floor(Math.random()*responses_arr.length)];
     if (id_user == id_touser) {
       counter = counter ? counter + 1 : 1;
       const veces = counter === 1 ? "nalgada" : "nalgadas";
       await env.SPANK.put(key, counter, {metadata: {value: counter},});
-      mensaje = `${user}, Te has pegado una nalgada a ti mismo ${emote}. Has recibido ${counter} ${veces} en total.`;
+      mensaje = `@${user} -> Te has pegado una nalgada a ti mismo ${emote}. Has recibido ${counter} ${veces} en total.`;
     } else {
       counter = counter ? counter + 1 : 1;
       await env.SPANK.put(key, counter, {metadata: {value: counter},});
       const veces = counter === 1 ? "nalgada" : "nalgadas";
-      mensaje = `${user} ${accion} a ${touser}. ${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
+      mensaje = `@${user} -> ${accion} a @${touser}. @${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
     }
   } catch (e) {
     mensaje = error_msg;
