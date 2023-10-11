@@ -110,7 +110,7 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
           counter = counter ? counter + 1 : 1;
           await env.FUCK.put(key, counter, {metadata: {value: counter},});
           const veces = counter === 1 ? "vez" : "veces";
-          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`;
+          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser} . Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`;
         }
       } else {
         if (id_user == id_touser) {
@@ -284,7 +284,7 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
       counter = counter ? counter + 1 : 1;
       await env.SPANK.put(key, counter, {metadata: {value: counter},});
       const veces = counter === 1 ? "nalgada" : "nalgadas";
-      mensaje = `@${user} -> ${accion} a @${touser}. @${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
+      mensaje = `@${user} -> ${accion} a @${touser} . @${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
     }
   } catch (e) {
     mensaje = error_msg;
