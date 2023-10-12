@@ -2066,7 +2066,7 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const region = riot.RegionNameRouting(query.region);
   const { name, id, profileIconId, status } = await riot.SummonerDataByName(summoner, region);
   if (status?.status_code === 404) {
-    return new JsResponse(JSON.stringify({status_code: 404}));
+    return new JsResponse(JSON.stringify({status_code: 404, errorName: "summoner"}));
   }
   const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${query.region.toLowerCase()}.json`);
   const ddversions_data = await ddversions.json();
@@ -2074,6 +2074,10 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const champion_data = await champion_list.json();
   const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${profileIconId}.png`;
   const masteriesData = await riot.getChampionMasteries(id, region, count);
+  if (masteriesData?.status?.status_code === 404) {
+    return new JsResponse(JSON.stringify({status_code: 404, errorName: "mastery"}));
+  }
+  console.log(masteriesData);
   const masteryScore = await riot.getChampionMasteryScore(id, region);
   const data = {
     summonerName: name,
