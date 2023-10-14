@@ -2064,7 +2064,7 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const { query } = req;
   const summoner = query.summoner;
   const region = riot.RegionNameRouting(query.region);
-  const { name, id, profileIconId, status } = await riot.SummonerDataByName(summoner, region);
+  const { name, puuid, profileIconId, status } = await riot.SummonerDataByName(summoner, region);
   if (status?.status_code === 404) {
     return new JsResponse(JSON.stringify({status_code: 404, errorName: "summoner"}));
   }
@@ -2073,12 +2073,12 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
   const champion_data = await champion_list.json();
   const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${profileIconId}.png`;
-  const masteriesData = await riot.getChampionMasteries(id, region, count);
+  const masteriesData = await riot.getChampionMasteriesByPUUID(puuid, region, count);
   if (masteriesData?.status?.status_code === 404) {
     return new JsResponse(JSON.stringify({status_code: 404, errorName: "mastery"}));
   }
   console.log(masteriesData);
-  const masteryScore = await riot.getChampionMasteryScore(id, region);
+  const masteryScore = await riot.getChampionMasteryScoreByPUUID(puuid, region);
   const data = {
     summonerName: name,
     region: query.region,

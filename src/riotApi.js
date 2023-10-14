@@ -121,6 +121,18 @@ class riotApi {
     return response;
   }
 
+  async getChampionMasteriesByPUUID(summoner_puuid, region, count) {
+    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${summoner_puuid}/top?count=${count}&api_key=${this.riot_token}`);
+    const response = await data.json();
+    return response;
+  }
+
+  async getChampionMasteryScoreByPUUID(summoner_puuid, region) {
+    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-puuid/${summoner_puuid}?api_key=${this.riot_token}`);
+    const response = await data.json();
+    return response;
+  }
+
   tierCase (option) {
     let tier = {};
     switch (option) {
