@@ -840,7 +840,7 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
 router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
   const { user, channel ,channel_id, touser } = req.params;
   if (user.toLowerCase() === touser.toLowerCase()) {
-    return new JsResponse(`${user} -> Debe mencionar a un streamer`);
+    return new JsResponse(`@${user} -> No puedes hacer shoutout a ti mismo.`);
   }
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const auth_list = (await env.AUTH_USERS.list()).keys;
@@ -850,14 +850,14 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
     console.log(touser);
     const touser_id = await twitch.getId(touser);
     if (!touser_id) {
-      return `${user} -> No se ha podido hacer shoutout, el usuario mencionado no existe.`;
+      return `@${user} -> No se ha podido hacer shoutout, el usuario mencionado no existe.`;
     }
     const shoutout = await twitch.ShoutOut(access_token, channel_id, touser_id);
     console.log(shoutout);
     if (shoutout?.status == 400) {
-      return `${user} -> ${channel} no está en vivo o no tiene espectadores.`;
+      return `@${user} -> ${channel} no está en vivo o no tiene espectadores.`;
     } else if (shoutout?.status == 429) {
-      return `${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
+      return `@${user} -> En este momento no es posible realizar un shoutout. Vuelve a intentarlo más tarde.`;
     }
     return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
   })))).filter(users_keys => users_keys);
