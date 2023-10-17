@@ -964,19 +964,14 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
         console.log("existe, generar nuevo id, y volver a comprobar");
         const uniqueId = generateUniqueId();
         return await comprobarCDN(uniqueId);
-      } else {
-        console.log("no existe, put en r2cdn");
-        return await putR2(id);
       }
+      console.log("no existe, put en r2cdn");
+      return await putR2(id);
     };
-
     const response = await comprobarCDN(uniqueId);
-
     return new JsResponse(response);
-
-  } else {
-    return new JsResponse("Error. No se ha encontrado un video.");
   }
+  return new JsResponse("Error. No se ha encontrado un video.");
 });
 
 router.get("/put-r2-chokis?", async (req, env, ctx) => {
@@ -1003,19 +998,14 @@ router.get("/put-r2-chokis?", async (req, env, ctx) => {
         console.log("existe, generar nuevo id, y volver a comprobar");
         const uniqueId = generateUniqueId();
         return await comprobarCDN(uniqueId);
-      } else {
-        console.log("no existe, put en r2cdn");
-        return await putR2(id);
       }
+      console.log("no existe, put en r2cdn");
+      return await putR2(id);
     };
-
     const response = await comprobarCDN(uniqueId);
-
     return new JsResponse(response);
-
-  } else {
-    return new JsResponse("Error. No se ha encontrado un video.");
   }
+  return new JsResponse("Error. No se ha encontrado un video.");
 });
 
 router.get("/lol/live-game?", async (req, env,) => {
