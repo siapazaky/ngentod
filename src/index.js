@@ -663,7 +663,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
 
 // Twitch Auth that redirect to oauth callback to save authenticated users
 router.get("/twitch/auth", async (req, env) => {
-  const redirect_uri = "https://dev.ahmedrangel.com/twitch/user-oauth";
+  const redirect_uri = env.WORKER_URL + "/twitch/user-oauth";
   const scopes = "bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows";
   const dest = new URL("https://id.twitch.tv/oauth2/authorize?"); // destination
   dest.searchParams.append("client_id", env.client_id);
@@ -679,7 +679,7 @@ router.get("/twitch/user-oauth?", async (req, env) => {
   const { query } = req;
   console.log(query);
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const redirect_uri = "https://dev.ahmedrangel.com/twitch/user-oauth";
+  const redirect_uri = env.WORKER_URL + "/twitch/user-oauth";
   if (query.code && query.scope) {
     const response = await twitch.OauthCallback(query.code, redirect_uri);
     const { access_token, refresh_token, expires_in } = await response.json();
@@ -866,7 +866,7 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
 
 // Spotify Auth that redirect to oauth callback to save authenticated users
 router.get("/spotify/auth", async (req, env) => {
-  const redirect_uri = "https://dev.ahmedrangel.com/spotify/user-oauth";
+  const redirect_uri = env.WORKER_URL + "/spotify/user-oauth";
   const scopes = "user-read-private user-read-currently-playing";
   const dest = new URL("https://accounts.spotify.com/authorize?"); // destination
   dest.searchParams.append("client_id", env.spotify_client_id);
@@ -882,7 +882,7 @@ router.get("/spotify/user-oauth?", async (req, env) => {
   const { query } = req;
   console.log(query);
   const spotify = new spotifyApi(env.spotify_client_id, env.spotify_client_secret);
-  const redirect_uri = "https://dev.ahmedrangel.com/spotify/user-oauth";
+  const redirect_uri = env.WORKER_URL + "/spotify/user-oauth";
   if (query.code) {
     const response = await spotify.OauthCallback(query.code, redirect_uri);
     const { access_token, refresh_token, expires_in } = await response.json();
