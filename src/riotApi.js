@@ -1,7 +1,7 @@
 class riotApi {
-
   constructor(riot_token) {
     this.riot_token = riot_token;
+    this.domain = "api.riotgames.com";
   }
 
   RegionNameRouting (region) {
@@ -73,62 +73,62 @@ class riotApi {
   }
 
   async SummonerDataByName(summoner_name, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summoner_name}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/summoner/v4/summoners/by-name/${summoner_name}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
 
   }
 
   async LiveGameData(summoner_id, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/spectator/v4/active-games/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async RankedData(summoner_id, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/league/v4/entries/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getMatches(puuid, regional_routing, count, queueId) {
-    const data = await fetch(`https://${regional_routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${this.riot_token}&queue=${queueId ? queueId : ""}`);
+    const data = await fetch(`https://${regional_routing}.${this.domain}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${this.riot_token}&queue=${queueId ? queueId : ""}`);
     const response = await data.json();
     return response;
   }
 
   async getMatchFromId(matchId, regional_routing) {
-    const data = await fetch(`https://${regional_routing}.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${regional_routing}.${this.domain}/lol/match/v5/matches/${matchId}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getChellengesData(puuid, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/challenges/v1/player-data/${puuid}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/challenges/v1/player-data/${puuid}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getChampionMasteries(summoner_id, region, count) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summoner_id}/top?count=${count}&api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/champion-mastery/v4/champion-masteries/by-summoner/${summoner_id}/top?count=${count}&api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getChampionMasteryScore(summoner_id, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/champion-mastery/v4/scores/by-summoner/${summoner_id}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getChampionMasteriesByPUUID(summoner_puuid, region, count) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${summoner_puuid}/top?count=${count}&api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/champion-mastery/v4/champion-masteries/by-puuid/${summoner_puuid}/top?count=${count}&api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
 
   async getChampionMasteryScoreByPUUID(summoner_puuid, region) {
-    const data = await fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-puuid/${summoner_puuid}?api_key=${this.riot_token}`);
+    const data = await fetch(`https://${region}.${this.domain}/lol/champion-mastery/v4/scores/by-puuid/${summoner_puuid}?api_key=${this.riot_token}`);
     const response = await data.json();
     return response;
   }
