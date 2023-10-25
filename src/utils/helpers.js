@@ -1,3 +1,5 @@
+import twitchApi from "../apis/twitchApi";
+
 export const getRandom = (max) => {
   return Math.round((Math.random() * (max - 1)) + 1);
 };
@@ -136,4 +138,23 @@ export const jsonCustomSorterByProperty = (array, customOrderArray, property) =>
     }
     return indexA - indexB;
   });
+};
+
+export const SettedTwitchTagsResponse = async(env, channelId, auth_list, filteredTags, originalLength) => {
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const response = (await Promise.all((auth_list.map(async(users_keys) => {
+    if (channelId == users_keys.name) {
+      const access_token = await twitch.RefreshToken(users_keys.metadata.value);
+      const tagsPatch = await twitch.SetTags(access_token, users_keys.name, filteredTags);
+      if (tagsPatch.status === 400 && originalLength < 10) {
+        return "Error. Una etiqueta contiene caracteres inválidos. Las etiquetas deben estar separadas por comas y evitar caracteres especiales o símbolos.";
+      } else if (tagsPatch.status === 400 && originalLength >= 10) {
+        return "Error. La cantidad máxima de etiquetas que puedes establecer es de 10.";
+      } else {
+        const newTags = String(filteredTags).replaceAll(/,/g,", ");
+        return `Etiquetas del canal actualizadas: ${newTags}`;
+      }
+    }
+  })))).filter(users_keys => users_keys);
+  return response[0];
 };

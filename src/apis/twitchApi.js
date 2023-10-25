@@ -119,7 +119,6 @@ class twitchApi {
       }
     });
     const { access_token } = await response.json();
-    console.log(access_token);
     return access_token;
   }
 
@@ -139,7 +138,6 @@ class twitchApi {
 
   // Set Stream Tags, require user access token, tags must be an array
   async SetTags (user_access_token, channelID, tags) {
-    console.log(tags);
     const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channelID}`;
     const set_tags = await fetch(api, {
       method: "PATCH",

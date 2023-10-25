@@ -1,14 +1,15 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty } from "./funciones";
-import twitchApi from "./twitchApi";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty, SettedTwitchTagsResponse } from "./utils/helpers";
+import twitchApi from "./apis/twitchApi";
 import JsResponse from "./response";
 import { Configuration, OpenAIApi } from "openai";
 import fetchAdapter from "@haverstack/axios-fetch-adapter";
-import spotifyApi from "./spotifyApi";
-import riotApi, { eloValues } from "./riotApi";
-import imgurApi from "./imgurApi";
+import spotifyApi from "./apis/spotifyApi";
+import riotApi, { eloValues } from "./apis/riotApi";
+import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
+import { lolChampTagAdder } from "./crons/lolChampTagAdder";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -748,28 +749,13 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   query_tags = query_tags.replaceAll(" ","").replace("tags:","").split(",");
   let tags_length = query_tags.length;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const break_line = "────────────────────────────────";
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
-    const response = `El canal contiene actualmente las siguientes etiquetas: ${break_line} ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
+    const response = `Etiquetas actuales: ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
     return new JsResponse(response);
   }
   const auth_list = (await env.AUTH_USERS.list()).keys;
-  const response = (await Promise.all((auth_list.map(async(users_keys) => {
-    if (channelID == users_keys.name) {
-      const access_token = await twitch.RefreshToken(users_keys.metadata.value);
-      const tags = await twitch.SetTags(access_token, users_keys.name, query_tags);
-      if (tags.status === 400 && tags_length < 10) {
-        console.log(tags);
-        return "Error. Una etiqueta contiene caracteres inválidos. Las etiquetas deben estar separadas por comas y evitar caracteres especiales o símbolos.";
-      } else if (tags.status === 400 && tags_length >= 10) {
-        return "Error. La cantidad máxima de etiquetas que puedes establecer es de 10.";
-      } else {
-        let settags = String(query_tags).replaceAll(/,/g,", ");
-        return `Etiquetas del canal actualizadas satisfactoriamente: ${break_line} ${settags}`;
-      }
-    }
-  })))).filter(users_keys => users_keys);
+  const response = await SettedTwitchTagsResponse(env, channelID, auth_list, query_tags, tags_length);
   return new JsResponse(response);
 });
 
@@ -2098,5 +2084,13 @@ router.all("*", () => new Response("Not Found.", { status: 404 }));
 export default {
   async fetch(req, env, ctx) {
     return router.handle(req, env, ctx);
+  },
+  async scheduled(event, env, ctx) {
+    switch (event.cron) {
+    case "*/3 * * * *":
+      await lolChampTagAdder(env);
+      break;
+    }
+    console.log("cron processed");
   }
 };
