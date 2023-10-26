@@ -78,7 +78,6 @@ class twitchApi {
     } else {
       const response = await fetch(api, {method: "GET", headers: headers});
       const body = await response.json();
-      console.log(body.data[0]);
       return body.data[0];
     };
   }
