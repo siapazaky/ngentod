@@ -2091,6 +2091,5 @@ export default {
       await lolChampTagAdder(env);
       break;
     }
-    console.log("cron processed");
   }
 };
