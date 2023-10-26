@@ -4,10 +4,12 @@ class twitchApi {
     this.client_id = client_id;
     this.client_secret = client_secret;
     this.grant_type = "client_credentials";
+    this.API_BASE = "https://api.twitch.tv/helix";
+    this.OAUTH_BASE = "https://id.twitch.tv/oauth2";
   }
 
   async getAccessToken() {
-    const oauth_url = "https://id.twitch.tv/oauth2/token";
+    const oauth_url = `${this.OAUTH_BASE}/token`;
     const response = await fetch(oauth_url, {
       body: JSON.stringify(this),
       method: "POST",
@@ -23,7 +25,7 @@ class twitchApi {
   async getUsername (user_id) {
     try {
       const accessToken = await this.getAccessToken();
-      const api = `https://api.twitch.tv/helix/users?id=${user_id}`;
+      const api = `${this.API_BASE}/users?id=${user_id}`;
       const headers = {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
@@ -45,7 +47,7 @@ class twitchApi {
   async getId (user_name) {
     try {
       const accessToken = await this.getAccessToken();
-      const api = `https://api.twitch.tv/helix/users?login=${user_name.toLowerCase()}`;
+      const api = `${this.API_BASE}/users?login=${user_name.toLowerCase()}`;
       const headers = {
         "Client-ID": this.client_id,
         "Authorization": "Bearer " + accessToken
@@ -66,7 +68,7 @@ class twitchApi {
 
   async getBroadcasterInfo(channel_id) {
     const accessToken = await this.getAccessToken();
-    const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channel_id}`;
+    const api = `${this.API_BASE}/channels?broadcaster_id=${channel_id}`;
     const headers = {
       "Client-ID": this.client_id,
       "Authorization": "Bearer " + accessToken
@@ -83,7 +85,7 @@ class twitchApi {
   }
   // user oauth call back for getting user access token, require oauth query code, require redirect uri
   async OauthCallback(query_code, redirect_uri) {
-    const oauth_url = `https://id.twitch.tv/oauth2/token?client_id=${this.client_id}&client_secret=${this.client_secret}&code=${query_code}&grant_type=authorization_code&redirect_uri=${redirect_uri}`;
+    const oauth_url = `${this.OAUTH_BASE}/token?client_id=${this.client_id}&client_secret=${this.client_secret}&code=${query_code}&grant_type=authorization_code&redirect_uri=${redirect_uri}`;
     const response = await fetch(oauth_url, {
       method: "POST",
       headers: {
@@ -96,7 +98,7 @@ class twitchApi {
 
   // token validation
   async Validate(user_access_token) {
-    const validate = "https://id.twitch.tv/oauth2/validate";
+    const validate = `${this.OAUTH_BASE}/validate`;
     const validation = await fetch(validate, {
       method: "GET",
       headers: {
@@ -109,7 +111,7 @@ class twitchApi {
 
   // refresh user access token
   async RefreshToken (refresh_token) {
-    const oauth_url = "https://id.twitch.tv/oauth2/token";
+    const oauth_url = `${this.OAUTH_BASE}/token`;
     const response = await fetch(oauth_url, {
       body: `grant_type=refresh_token&refresh_token=${refresh_token}&client_id=${this.client_id}&client_secret=${this.client_secret}`,
       method: "POST",
@@ -123,7 +125,7 @@ class twitchApi {
 
   // Get Bits Leaderboard, require user access token
   async getBitsLeaderBoard (user_access_token) {
-    const api = "https://api.twitch.tv/helix/bits/leaderboard?count=20&period=all";
+    const api = `${this.API_BASE}/bits/leaderboard?count=20&period=all`;
     const top_users = await fetch(api, {
       method: "GET",
       headers: {
@@ -137,7 +139,7 @@ class twitchApi {
 
   // Set Stream Tags, require user access token, tags must be an array
   async SetTags (user_access_token, channelID, tags) {
-    const api = `https://api.twitch.tv/helix/channels?broadcaster_id=${channelID}`;
+    const api = `${this.API_BASE}/channels?broadcaster_id=${channelID}`;
     const set_tags = await fetch(api, {
       method: "PATCH",
       headers: {
@@ -153,7 +155,7 @@ class twitchApi {
 
   // Set Stream Moderator, require user access token
   async AddMod (user_access_token, channel_id, user_id) {
-    const api = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const api = `${this.API_BASE}/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
     const add_mod = await fetch(api, {
       method: "POST",
       headers: {
@@ -168,7 +170,7 @@ class twitchApi {
 
   // Remove Stream Moderator, require user access token
   async UnMod (user_access_token, channel_id, user_id) {
-    const api = `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const api = `${this.API_BASE}/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`;
     const unmod = await fetch(api, {
       method: "DELETE",
       headers: {
@@ -183,7 +185,7 @@ class twitchApi {
 
   // Get chatters as mod or broadcaster, require user access token
   async getChatters (user_access_token, channel_id, mod_id) {
-    const api = `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${channel_id}&moderator_id=${mod_id}`;
+    const api = `${this.API_BASE}/chat/chatters?broadcaster_id=${channel_id}&moderator_id=${mod_id}`;
     const response = await fetch(api, {
       method: "GET",
       headers: {
@@ -197,7 +199,7 @@ class twitchApi {
 
   // Post shoutout, require user access token
   async ShoutOut (user_access_token, channel_id, to_channel_id) {
-    const api = `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${to_channel_id}&moderator_id=${channel_id}`;
+    const api = `${this.API_BASE}/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${to_channel_id}&moderator_id=${channel_id}`;
     const shoutout = await fetch(api, {
       method: "POST",
       headers: {
@@ -215,7 +217,7 @@ class twitchApi {
 
   // Get if someone follow a broadcaster (requires boradcaster oauth)
   async getChannelFollower (user_access_token, channel_id, user_id) {
-    const api = `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
+    const api = `${this.API_BASE}/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
     const response = await fetch(api, {
       method: "GET",
       headers: {
