@@ -228,6 +228,25 @@ class twitchApi {
     return data[0];
 
   }
+
+  // Get Clips
+  async getClips (clip_id) {
+    const accessToken = await this.getAccessToken();
+    const api = `${this.API_BASE}/clips?id=${clip_id}`;
+    const headers = {
+      "Client-ID": this.client_id,
+      "Authorization": "Bearer " + accessToken
+    };
+
+    if(!accessToken) {
+      console.log("No Token");
+      return null;
+    } else {
+      const response = await fetch(api, {method: "GET", headers: headers});
+      const body = await response.json();
+      return body.data[0];
+    };
+  }
 }
 
 export default twitchApi;

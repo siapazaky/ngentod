@@ -2079,6 +2079,29 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
   return new JsResponse(JSON.stringify(data));
 });
 
+router.get("/dc/twitch-video-scrapper?", async (req, env) => {
+  const { query } = req;
+  const url = decodeURIComponent(query.url);
+  const id = obtenerIDDesdeURL(url);
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const obj = {};
+  try {
+    const data = await twitch.getClips(id);
+    const thumbnailUrl = data?.thumbnail_url;
+    const videoUrl = thumbnailUrl.replace(/-preview-.*\.jpg/, ".mp4");
+    const clipUrl = data?.url;
+    const title = data?.title;
+    const channel = data?.broadcaster_name;
+    obj.video_url = videoUrl;
+    obj.short_url = clipUrl;
+    obj.caption = title;
+    obj.status = 200;
+  } catch (e) {
+    obj.status = 404;
+  }
+  return new JsResponse(JSON.stringify(obj));
+});
+
 router.all("*", () => new Response("Not Found.", { status: 404 }));
 
 export default {
