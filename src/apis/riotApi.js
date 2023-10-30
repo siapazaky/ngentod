@@ -72,11 +72,22 @@ class riotApi {
     return false;
   }
 
-  async SummonerDataByName(summoner_name, region) {
-    const response = await fetch(`https://${region}.${this.domain}/lol/summoner/v4/summoners/by-name/${summoner_name}?api_key=${this.riot_token}`);
+  async getSummonerDataByPUUID(puuid, region) {
+    const response = await fetch(`https://${region}.${this.domain}/lol/summoner/v4/summoners/by-puuid/${puuid}?api_key=${this.riot_token}`);
     const data = await response.json();
     return data;
+  }
 
+  async getAccountByRiotID(name, tag, cluster) {
+    const response = await fetch(`https://${cluster}.${this.domain}/riot/account/v1/accounts/by-riot-id/${name}/${tag}?api_key=${this.riot_token}`);
+    const data = await response.json();
+    return data;
+  }
+
+  async SummonerDataByName(summoner, region) {
+    const response = await fetch(`https://${region}.${this.domain}/lol/summoner/v4/summoners/by-name/${summoner}?api_key=${this.riot_token}`);
+    const data = await response.json();
+    return data;
   }
 
   async LiveGameData(summoner_id, region) {
@@ -91,14 +102,14 @@ class riotApi {
     return data;
   }
 
-  async getMatches(puuid, regional_routing, count, queueId) {
-    const response = await fetch(`https://${regional_routing}.${this.domain}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${this.riot_token}&queue=${queueId ? queueId : ""}`);
+  async getMatches(puuid, cluster, count, queueId) {
+    const response = await fetch(`https://${cluster}.${this.domain}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=${count}&api_key=${this.riot_token}&queue=${queueId ? queueId : ""}`);
     const data = await response.json();
     return data;
   }
 
-  async getMatchFromId(matchId, regional_routing) {
-    const response = await fetch(`https://${regional_routing}.${this.domain}/lol/match/v5/matches/${matchId}?api_key=${this.riot_token}`);
+  async getMatchFromId(matchId, cluster) {
+    const response = await fetch(`https://${cluster}.${this.domain}/lol/match/v5/matches/${matchId}?api_key=${this.riot_token}`);
     const data = await response.json();
     return data;
   }

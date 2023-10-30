@@ -1252,6 +1252,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
   return new JsResponse(JSON.stringify(match));
 });
 
+// LoL Profile
 router.get("/lol/profile-for-discord?", async (req, env,) => {
   const { query } = req;
   let region = query.region;
@@ -1321,8 +1322,8 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
           const assists = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`));
           const summoner1Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`));
           const summoner2Id = Number(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`));
-          const remake = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`));
-          const win = String(jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`));
+          const remake = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`)[0];
+          const win = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`)[0];
           if (summoner_id == participantId) {
             match_history.push({
               orderId: i,
@@ -1344,6 +1345,111 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
       profile_data.matchesHistory = match_history;
     } else {
       profile_data = {status_code: 404, errorName: "summoner"};
+    }
+  } else {
+    profile_data = {status_code: 404, errorName: "region"};
+  }
+  return new JsResponse(JSON.stringify(profile_data));
+});
+
+// LoL Profile (with Riot ID)
+router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
+  const { name, tag } = req.params;
+  const region = (req.params.region).toLowerCase();
+  let profile_data;
+  const rank_profile = [], match_history = [];
+  const riot = new riotApi(env.riot_token);
+  const route = riot.RegionNameRouting(region);
+  const cluster = riot.RegionalRouting(region);
+  console.log(region, route, cluster);
+  if (name && tag && route) {
+    const ddversionsFetch = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
+    const ddversions = await ddversionsFetch.json();
+    const account = await riot.getAccountByRiotID(name, tag, cluster);
+    const puuid = account.puuid;
+    const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+    const summoner_id = summoner.id;
+    if (summoner.status == undefined) {
+      const challenges_data = await riot.getChellengesData(puuid, route);
+      const titleId = challenges_data.preferences.title;
+      const challenges_assets = titleId !== "" ? await fetch("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/challenges.json") : null;
+      const challenges_json = titleId !== "" ? await challenges_assets.json() : null;
+      const titleName = titleId !== "" ? jp.query(challenges_json, `$..[?(@.itemId==${titleId})].name`)[0] : "";
+      profile_data = {
+        status_code: 200,
+        summonerId: summoner_id,
+        puuid: puuid,
+        riotName: account.gameName,
+        riotTag: account.tagLine,
+        summonerLevel: summoner.summonerLevel,
+        profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`,
+        region: region,
+        route: route,
+        titleName: titleName
+      };
+      const ranked_data = await riot.RankedData(summoner.id, route);
+      ranked_data.forEach((rankedData) => {
+        if (rankedData.queueType !== "CHERRY") {
+          const tier = riot.tierCase(rankedData.tier).full.toUpperCase();
+          rank_profile.push({
+            leagueId: rankedData.leagueId,
+            queueType: rankedData.queueType,
+            tier: tier,
+            rank: rankedData.rank,
+            leaguePoints: rankedData.leaguePoints,
+            wins: rankedData.wins,
+            losses: rankedData.losses
+          });
+        }
+      });
+      const queue_sort = ["RANKED_SOLO_5x5", "RANKED_FLEX_SR"];
+      rank_profile.sort((a, b) => {
+        const soloIndex = queue_sort.indexOf(a?.queueType);
+        const flexIndex = queue_sort.indexOf(b?.queueType);
+        return soloIndex - flexIndex;
+      });
+      profile_data.rankProfile = rank_profile;
+      const matchesId = await riot.getMatches(puuid, cluster, 10);
+      console.log(matchesId);
+      const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions.n.champion}/data/es_MX/champion.json`);
+      const champion_data = await champion_list.json();
+      for (let i = 0; i < matchesId.length; i++) {
+        const match_data = await riot.getMatchFromId(matchesId[i], cluster);
+        if (match_data?.status?.status_code !== 404) {
+          const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
+          const queueId = match_data?.info?.queueId;
+          const queueName = riot.queueCase(queueId);
+          const participantId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`)[0];
+          const championId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`)[0];
+          const championName = jp.query(champion_data.data, `$..[?(@.key==${championId})].name`)[0];
+          const kills = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`)[0];
+          const deaths = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`)[0];
+          const assists = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`)[0];
+          const summoner1Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`)[0];
+          const summoner2Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`)[0];
+          const remake = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`)[0];
+          const win = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`)[0];
+          if (summoner_id == participantId) {
+            match_history.push({
+              orderId: i,
+              gameEndTimestamp: gameEndTimestamp,
+              queueName: queueName.short_name,
+              championName: championName,
+              kills: kills,
+              deaths: deaths,
+              assists: assists,
+              summoner1Id: summoner1Id,
+              summoner2Id: summoner2Id,
+              win: win,
+              remake: remake,
+              strTime: getDateAgoFromTimeStamp(gameEndTimestamp)
+            });
+          }
+        }
+      }
+      profile_data.matchesHistory = match_history;
+    } else {
+      profile_data = {status_code: 404, errorName: "riotId"};
     }
   } else {
     profile_data = {status_code: 404, errorName: "region"};
