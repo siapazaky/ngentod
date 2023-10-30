@@ -1244,7 +1244,7 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
     match.team1.eloAvg = eloObj(elo1, eloAvg1);
     match.team2.eloAvg = eloObj(elo2, eloAvg2);
     match.queueId = live_game_data.gameQueueConfigId;
-    match.gameType = game_type.full_name;
+    match.gameType = game_type.short_name;
     match.region = region.toUpperCase();
     match.startTime = live_game_data.gameStartTime;
     return new JsResponse(JSON.stringify(match));
@@ -1293,26 +1293,11 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
           rank_profile.push({leagueId: rankedData.leagueId, queueType: rankedData.queueType, tier: tier, rank: rankedData.rank, leaguePoints: rankedData.leaguePoints, wins: rankedData.wins, losses: rankedData.losses});
         }
       });
-      const queue_sort_first = "RANKED_SOLO_5x5";
-      const queue_sort_second = "RANKED_FLEX_SR";
-      rank_profile.sort((a,b) => {
-        const solo = a.queueType;
-        const flex = b.queueType;
-        if (solo === queue_sort_first) {
-          return -1;
-        }
-        if (flex === queue_sort_first) {
-          return 1;
-        }
-
-        if (solo === queue_sort_second) {
-          return -1;
-        }
-
-        if (flex === queue_sort_second) {
-          return 1;
-        }
-        return 0;
+      const queue_sort = ["RANKED_SOLO_5x5", "RANKED_FLEX_SR"];
+      rank_profile.sort((a, b) => {
+        const soloIndex = queue_sort.indexOf(a.queueType);
+        const flexIndex = queue_sort.indexOf(b.queueType);
+        return soloIndex - flexIndex;
       });
       profile_data.rankProfile = rank_profile;
       const count = 10;
@@ -1342,7 +1327,7 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
             match_history.push({
               orderId: i,
               gameEndTimestamp: gameEndTimestamp,
-              queueName: queueName.full_name,
+              queueName: queueName.short_name,
               championName: championName,
               kills: kills,
               deaths: deaths,
@@ -1363,7 +1348,7 @@ router.get("/lol/profile-for-discord?", async (req, env,) => {
   } else {
     profile_data = {status_code: 404, errorName: "region"};
   }
-  return new Response(JSON.stringify(profile_data));
+  return new JsResponse(JSON.stringify(profile_data));
 });
 
 router.get("/lol/elo-for-discord?", async (req, env,) => {
@@ -1405,7 +1390,7 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
               wins: el.wins,
               losses: el.losses,
               leaguePoints: el.leaguePoints,
-              queueName: queueCase.full_name
+              queueName: queueCase.short_name
             };
             const regional_routing = riot.RegionalRouting(region);
             const matchesId = await riot.getMatches(puuid, regional_routing , count, queueId);
