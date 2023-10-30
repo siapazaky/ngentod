@@ -223,56 +223,73 @@ class riotApi {
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "CUSTOM";
       queue.full_name = "Custom";
+      queue.short_name = "Custom";
       break;
     case 420:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "SOLO/DUO-R";
-      queue.full_name = "SoloQ";
+      queue.full_name = "Solo/Duo";
+      queue.short_name = "SoloQ";
       break;
     case 440:
       queue.profile_rank_type = "RANKED_FLEX_SR";
       queue.queue_name = "FLEX-R";
-      queue.full_name = "Flex";
+      queue.full_name = "Flexible";
+      queue.short_name = "Flex";
       break;
     case 450:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "ARAM";
       queue.full_name = "ARAM";
+      queue.short_name = "ARAM";
       break;
     case 400:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "NORMAL";
       queue.full_name = "Normal";
+      queue.short_name = "Normal";
       break;
     case 430:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "NORMAL";
       queue.full_name = "Normal";
+      queue.short_name = "Normal";
       break;
     case 700:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "CLASH";
       queue.full_name = "Clash";
+      queue.short_name = "Clash";
       break;
     case 720:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue_name = "ARAM CLASH";
       queue.full_name = "ARAM Clash";
+      queue.short_name = "ARAM Clash";
       break;
     case 900:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue = "ARURF";
-      queue.full_name = "ARURF";
+      queue.full_name = "All Random URF";
+      queue.short_name = "ARURF";
+      break;
+    case 1300:
+      queue.profile_rank_type = "RANKED_SOLO_5x5";
+      queue.queue = "FRENESÍ";
+      queue.full_name = "Frenesí en el Nexo";
+      queue.short_name = "Frenesí";
       break;
     case 1700:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue = "ARENA";
       queue.full_name = "Arena";
+      queue.short_name = "Arena";
       break;
     default:
       queue.profile_rank_type = "RANKED_SOLO_5x5";
       queue.queue = "";
       queue.full_name = "";
+      queue.short_name = "";
       break;
 
     }
