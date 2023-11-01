@@ -1366,9 +1366,9 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
     const ddversionsFetch = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
     const ddversions = await ddversionsFetch.json();
     const account = await riot.getAccountByRiotID(name, tag, cluster);
-    if (!account?.status) {
-      const puuid = account.puuid;
-      const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+    const puuid = account.puuid;
+    const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+    if (!account?.status && !summoner?.status) {
       const summoner_id = summoner.id;
       const challenges_data = await riot.getChellengesData(puuid, route);
       const titleId = challenges_data.preferences.title;
@@ -1390,7 +1390,7 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
       const ranked_data = await riot.RankedData(summoner.id, route);
       ranked_data.forEach((rankedData) => {
         if (rankedData.queueType !== "CHERRY") {
-          const tier = riot.tierCase(rankedData.tier).full.toUpperCase();
+          const tier = riot.tierCase(rankedData.tier).full;
           rank_profile.push({
             leagueId: rankedData.leagueId,
             queueType: rankedData.queueType,
@@ -1464,7 +1464,7 @@ router.get("/lol/elo-for-discord?", async (req, env,) => {
   const region = (query.region).toLowerCase();
   const summoner = query.summoner;
   const type = query.type;
-  const queueId = type === "flex" ? 440 : 420;
+  const queueId = type.toLowerCase() === "flex" ? 440 : 420;
   const queueCase = riot.queueCase(queueId);
   let elo_data;
   const samples = [], elo_samples = [];
@@ -1557,15 +1557,15 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
   const cluster = riot.RegionalRouting(region);
-  const queueId = queue === "flex" ? 440 : 420;
+  const queueId = queue.toLowerCase() === "flex" ? 440 : 420;
   const queueCase = riot.queueCase(queueId);
   let elo_data;
   const samples = [], elo_samples = [];
   if (name && tag && route) {
     const account = await riot.getAccountByRiotID(name, tag, cluster);
-    if (!account?.status) {
-      const puuid = account.puuid;
-      const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+    const puuid = account.puuid;
+    const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+    if (!account?.status && !summoner?.status) {
       const ddversionsF = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
       const ddversions = await ddversionsF.json();
       elo_data = {
@@ -1621,7 +1621,7 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
                 const eloNameSplit = eloName.split(" ");
                 const eloTier = riot.tierCase(eloNameSplit[0]).full;
                 const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
-                elo_data.avg = {tier: eloTier.toUpperCase(), rank: eloRank};
+                elo_data.avg = {tier: eloTier, rank: eloRank};
                 break;
               } else {
                 elo_data.avg = {tier: "Desconocido", rank: "Desconocido"};
