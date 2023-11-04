@@ -10,7 +10,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
-import { nbFuck, nbHug } from "./utils/nightbotEmotes";
+import { nbFuck, nbHug, nbKiss } from "./utils/nightbotEmotes";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -215,16 +215,16 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const count = (await select.first())?.count;
     const counter = count ? count + 1 : 1;
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
       if (!count) {
         await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
       } else {
         await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
       }
-      const veces = counter === 1 ? "abrazo" : "abrazos";
-      const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
+      const veces = counter === 1 ? "beso" : "besos";
+      const emote = nbKiss[Math.floor(Math.random()*nbKiss.length)];
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(errorMsg);
