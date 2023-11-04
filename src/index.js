@@ -157,8 +157,6 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserId = await twitch.getId(touser);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`);
     const count = (await select.first()).count;
-    console.log(select);
-    console.log(count);
     const counter = count ? count + 1 : 1;
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
@@ -170,7 +168,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser}. Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
