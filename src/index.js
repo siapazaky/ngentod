@@ -146,6 +146,37 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
   return new JsResponse(`${mensaje}`);
 });
 
+// fuck v2
+router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
+  const { user, userId, channelId, touser } = req.params;
+  const percent = getRandom(100);
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
+  try {
+    const touserId = await twitch.getId(touser);
+    const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`);
+    const count = (await select.first()).count;
+    console.log(select);
+    console.log(count);
+    const counter = count ? count + 1 : 1;
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Cómo? te quieres cog*r a ti mismo? CaitlynS`);
+    } else if (percent < 100) {
+      if (!count) {
+        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
+      } else {
+        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+      }
+      const veces = counter === 1 ? "vez" : "veces";
+      return new JsResponse(`@${user} -> te has cog*ido a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total.`);
+    } else {
+      return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+    }
+  } catch (e) {
+    return new JsResponse(errorMsg);
+  }
+});
+
 // cum
 router.get("/cum/:user/:channelID/:touser", async (req, env) => {
   const { user, touser, channelID } = req.params;
