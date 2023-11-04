@@ -157,11 +157,11 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
-    } else if (percent < 40) {
+    } else if (percent < 100) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}'`).first();
+        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
       } else {
         await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
@@ -172,6 +172,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
+    console.log(e);
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
