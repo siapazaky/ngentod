@@ -10,7 +10,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
-import { nbFuck } from "./utils/nightbotEmotes";
+import { nbFuck, nbHug } from "./utils/nightbotEmotes";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -156,7 +156,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   try {
     const touserId = await twitch.getId(touser);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`);
-    const count = (await select.first()).count;
+    const count = (await select.first())?.count;
     const counter = count ? count + 1 : 1;
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
@@ -171,6 +171,60 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser}. Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+    }
+  } catch (e) {
+    return new JsResponse(errorMsg);
+  }
+});
+
+// hug v2
+router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
+  const { user, userId, channelId, touser } = req.params;
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
+  try {
+    const touserId = await twitch.getId(touser);
+    const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}'`);
+    const count = (await select.first())?.count;
+    const counter = count ? count + 1 : 1;
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+    } else {
+      if (!count) {
+        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
+      } else {
+        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+      }
+      const veces = counter === 1 ? "abrazo" : "abrazos";
+      const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
+    }
+  } catch (e) {
+    return new JsResponse(errorMsg);
+  }
+});
+
+// kiss v2
+router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
+  const { user, userId, channelId, touser } = req.params;
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
+  try {
+    const touserId = await twitch.getId(touser);
+    const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}'`);
+    const count = (await select.first())?.count;
+    const counter = count ? count + 1 : 1;
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+    } else {
+      if (!count) {
+        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
+      } else {
+        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+      }
+      const veces = counter === 1 ? "abrazo" : "abrazos";
+      const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(errorMsg);
