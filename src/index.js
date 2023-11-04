@@ -152,7 +152,6 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
   const percent = getRandom(100);
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   try {
     const touserId = await twitch.getId(touser);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`);
@@ -173,7 +172,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
-    return new JsResponse(errorMsg);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -181,7 +180,6 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
 router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   try {
     const touserId = await twitch.getId(touser);
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}'`);
@@ -200,7 +198,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(errorMsg);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -208,7 +206,6 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
 router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const errorMsg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
   try {
     const touserId = await twitch.getId(touser);
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}'`);
@@ -227,7 +224,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       return new JsResponse(`@${user} -> Le has dado un beso a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(errorMsg);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
