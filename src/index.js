@@ -163,7 +163,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       if (!count) {
         await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
       } else {
-        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
@@ -191,7 +191,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       if (!count) {
         await env.NB.prepare(`INSERT INTO hug (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
       } else {
-        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
@@ -217,7 +217,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       if (!count) {
         await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
       } else {
-        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
+        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
