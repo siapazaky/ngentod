@@ -154,7 +154,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const twitch = new twitchApi(env.client_id, env.client_secret);
   try {
     const touserId = await twitch.getId(touser);
-    const select = (await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`)).first();
+    const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
     } else if (percent < 40) {
@@ -182,7 +182,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const twitch = new twitchApi(env.client_id, env.client_secret);
   try {
     const touserId = await twitch.getId(touser);
-    const select = (await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}'`)).first();
+    const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
@@ -208,7 +208,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const twitch = new twitchApi(env.client_id, env.client_secret);
   try {
     const touserId = await twitch.getId(touser);
-    const select = (await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}'`)).first();
+    const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
