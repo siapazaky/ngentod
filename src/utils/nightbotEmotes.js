@@ -1,0 +1,1 @@
+export const nbFuck = ["angarJi","angarRico","angarGasm"];

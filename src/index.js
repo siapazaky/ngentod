@@ -10,6 +10,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
+import { nbFuck } from "./utils/nightbotEmotes";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -160,15 +161,16 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     console.log(count);
     const counter = count ? count + 1 : 1;
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Cómo? te quieres cog*r a ti mismo? CaitlynS`);
-    } else if (percent < 100) {
+      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+    } else if (percent < 40) {
       if (!count) {
         await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId, count) VALUES ('${touserId}', '${touser}', '${channelId}', '${counter}')`).first();
       } else {
         await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "vez" : "veces";
-      return new JsResponse(`@${user} -> te has cog*ido a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total.`);
+      const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser}. Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`);
     } else {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
