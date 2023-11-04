@@ -10,7 +10,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
-import { nbFuck, nbHug, nbKiss } from "./utils/nightbotEmotes";
+import { nbFuck, nbHug, nbKiss, nbKissChino } from "./utils/nightbotEmotes";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -220,7 +220,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
         await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "beso" : "besos";
-      const emote = nbKiss[Math.floor(Math.random()*nbKiss.length)];
+      const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
       return new JsResponse(`@${user} -> Le has dado un beso a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
