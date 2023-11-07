@@ -1,0 +1,41 @@
+name = "twitch"
+main = "src/index.js"
+compatibility_date = "2022-12-17"
+env = { }
+compatibility_flags = [ "nodejs_compat" ]
+
+kv_namespaces = [
+  { binding = "AUTH_USERS", id = "f995852ab9c34f74a9f21d5ea86451f9" },
+  { binding = "CUM", id = "10609ec1a1024baa833e5f0987640f15" },
+  { binding = "EDUCAR", id = "b7b57f718d0d49e687f934187acab46a" },
+  { binding = "FUCK", id = "8b1399a176974e9ea357e41617e59573" },
+  { binding = "GPT", id = "064407f00455407c9c4fbd1bee16afcb" },
+  { binding = "HUG", id = "301c9dfa6739434b8653c2ea0c924f72" },
+  { binding = "KISS", id = "438fcee4874747369ecd54651c825334" },
+  { binding = "SPANK", id = "394ddc0e32e14ad1a9ac0e1ad911ea61" },
+  { binding = "KICK_LIVE_CHECK", id = "609b6ef25a4644b1af255ac21146c219" }
+]
+
+r2_buckets = [
+  { binding = "R2gpt", bucket_name = "gpt", preview_bucket_name = "" },
+  { binding = "R2cdn", bucket_name = "assets", preview_bucket_name = "" }
+]
+
+[triggers]
+crons = ["*/3 * * * *"]
+
+[[d1_databases]]
+binding = "ImgurDiscord"
+database_name = "imgur-discord"
+database_id = "a164b874-5aeb-4735-854c-6634b1e5f1c0"
+
+[[d1_databases]]
+binding = "NB"
+database_name = "nightbot"
+database_id = "584dd3e0-b9f8-40ed-b8a9-d4598da372de"
+
+[vars]
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+
+
+
