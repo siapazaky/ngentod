@@ -2104,7 +2104,16 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
       }
     });
     const result = await fetchTweet.json();
-    const data = result.data?.threaded_conversation_with_injections_v2?.instructions[0]?.entries[0]?.content?.itemContent?.tweet_results?.result?.legacy;
+    const entries = () => {
+      const entries = [];
+      result.data?.threaded_conversation_with_injections_v2?.instructions[0]?.entries?.forEach((en) => {
+        if (en?.entryId === `tweet-${id}`) {
+          entries.push(en?.content?.itemContent?.tweet_results?.result?.legacy);
+        }
+      });
+      return entries[0];
+    };
+    const data = entries();
     console.log(data);
     if (data?.extended_entities?.media[0]?.video_info) {
       const videos = data.extended_entities.media[0].video_info.variants;
