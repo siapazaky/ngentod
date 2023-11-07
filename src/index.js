@@ -747,13 +747,14 @@ router.get("/dc/image-variation/:url", async (req, env) => {
 
 // Twitch Auth that redirect to oauth callback to save authenticated users
 router.get("/twitch/auth", async (req, env) => {
+  const { scopes } = req.query;
   const redirect_uri = env.WORKER_URL + "/twitch/user-oauth";
-  const scopes = "bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows";
+  // bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows
   const dest = new URL("https://id.twitch.tv/oauth2/authorize?"); // destination
   dest.searchParams.append("client_id", env.client_id);
   dest.searchParams.append("redirect_uri", redirect_uri);
   dest.searchParams.append("response_type", "code");
-  dest.searchParams.append("scope", scopes);
+  dest.searchParams.append("scope", decodeURIComponent(scopes));
   console.log(dest);
   return Response.redirect(dest, 302);
 });
@@ -2282,13 +2283,15 @@ router.get("/dc/kick-live?", async (req, env) => {
 });
 
 // Nightbot command: Followage
-router.get("/followage/:channel/:touser", async (req, env) => {
+router.get("/followage/:channel/:touser?", async (req, env) => {
   const { channel, touser } = req.params;
+  const { moderator_id } = req.query;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const auth_list = (await env.AUTH_USERS.list()).keys;
   const response = (await Promise.all((auth_list.map(async(users_keys) => {
     const channel_id = await twitch.getId(channel);
-    if (channel_id === users_keys.name) {
+    const access_id = moderator_id ? moderator_id : channel_id;
+    if (access_id === users_keys.name) {
       const touser_id = await twitch.getId(touser);
       const access_token = await twitch.RefreshToken(users_keys.metadata.value);
       const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
