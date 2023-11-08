@@ -1833,7 +1833,7 @@ router.get("/d1/select?", async (req, env) => {
 
 router.get("/dc/instagram-video-scrapper?", async (req, env) => {
   let count = 0;
-  let maxTries = 3;
+  let maxTries = 4;
   const scrap = async () => {
     const { query } = req;
     const _cookie = env.ig_cookie;
