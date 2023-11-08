@@ -772,7 +772,7 @@ router.get("/twitch/user-oauth?", async (req, env) => {
     const { login, user_id } = await validation.json();
     const key = user_id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
-    return new JsResponse(`Usuario autenticado: ${login}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+    return new JsResponse(`Usuario autenticado: ${login}\nID: ${user_id}`);
   }
   return new JsResponse("Error. Authentication failed.");
 });
@@ -2296,23 +2296,22 @@ router.get("/followage/:channel/:touser?", async (req, env) => {
   const { channel, touser } = req.params;
   const { moderator_id } = req.query;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  const auth_list = (await env.AUTH_USERS.list()).keys;
-  const response = (await Promise.all((auth_list.map(async(users_keys) => {
-    const channel_id = await twitch.getId(channel);
-    const access_id = moderator_id ? moderator_id : channel_id;
-    if (access_id === users_keys.name) {
-      const touser_id = await twitch.getId(touser);
-      const access_token = await twitch.RefreshToken(users_keys.metadata.value);
-      const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
-      if (data?.followed_at) {
-        const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-        return `@${touser} ha estado siguiendo a ${channel} por ${unitsString}`;
-      }
-      return `@${touser} no está siguiendo a ${channel}`;
+  const channel_id = await twitch.getId(channel);
+  const access_id = moderator_id ? moderator_id : channel_id;
+  const auth = await env.AUTH_USERS.get(access_id);
+  if (auth) {
+    const touser_id = await twitch.getId(touser);
+    const access_token = await twitch.RefreshToken(auth);
+    const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
+    if (data?.followed_at) {
+      const unitsString = getTimeUnitsFromISODate(data?.followed_at);
+      return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
     }
-  })))).filter(users_keys => users_keys);
-  console.log(response);
-  return new JsResponse(response);
+    return new JsResponse(`@${touser} no está siguiendo a ${channel}`);
+  } else if (!auth && moderator_id) {
+    return new JsResponse(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+  }
+  return new JsResponse(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
 });
 
 // Lol Champion Masteries
