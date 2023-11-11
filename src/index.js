@@ -11,6 +11,7 @@ import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
 import { nbFuck, nbHug, nbKiss, nbKissChino } from "./utils/nightbotEmotes";
+import YouTube from "youtube-sr";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -112,7 +113,7 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
           counter = counter ? counter + 1 : 1;
           await env.FUCK.put(key, counter, {metadata: {value: counter},});
           const veces = counter === 1 ? "vez" : "veces";
-          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser} . Se han cog*do a @${touser} ${counter} ${veces} en total. ${emote}`;
+          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`;
         }
       } else {
         if (id_user == id_touser) {
@@ -167,7 +168,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser}. Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
       return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
@@ -196,7 +197,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -222,7 +223,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
-      return new JsResponse(`@${user} -> Le has dado un beso a @${touser}. Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -325,7 +326,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
         counter = counter ? counter + 1 : 1;
         await env.HUG.put(key, counter, {metadata: {value: counter},});
         const veces = counter === 1 ? "abrazo" : "abrazos";
-        mensaje = `${user} le ha dado un abrazo a ${touser}. ${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
+        mensaje = `${user} le ha dado un abrazo a ${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`;
       }
     } else {
       if (id_user == id_touser) {
@@ -2380,6 +2381,27 @@ router.get("/dc/twitch-video-scrapper?", async (req, env) => {
     obj.status = 404;
   }
   return new JsResponse(JSON.stringify(obj));
+});
+
+router.get("/dc/yt-info?", async (req, env) => {
+  const { url } = req.query;
+  const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/)?|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+  const videoUrl = decodeURIComponent(url);
+  const id = videoUrl.match(regex)[1];
+  try {
+    const ytInfo = await YouTube.getVideo("https://youtu.be/" + id);
+    const short_url = "https://youtu.be/" + ytInfo.id;
+    return new JsResponse(JSON.stringify({
+      caption: ytInfo.title,
+      duration: ytInfo.duration,
+      short_url: short_url,
+      status: 200
+    }));
+  } catch (e) {
+    return new JsResponse(JSON.stringify({
+      status: 404
+    }));
+  }
 });
 
 router.all("*", () => new Response("Not Found.", { status: 404 }));
