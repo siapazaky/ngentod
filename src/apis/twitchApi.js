@@ -243,6 +243,28 @@ class twitchApi {
       return data.data[0];
     };
   }
+
+  async getUserByName (name) {
+    try {
+      const accessToken = await this.getAccessToken();
+      const api = `${this.API_BASE}/users?login=${name.toLowerCase()}`;
+      const headers = {
+        "Client-ID": this.client_id,
+        "Authorization": "Bearer " + accessToken
+      };
+
+      if(!accessToken) {
+        console.log("No Token");
+        return null;
+      } else {
+        const response = await fetch(api, {method: "GET", headers: headers});
+        const body = await response.json();
+        return body.data[0];
+      };
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 export default twitchApi;
