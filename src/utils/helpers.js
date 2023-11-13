@@ -117,7 +117,7 @@ export const getTimeUnitsFromISODate = (ISO) => {
 
 export const KVSorterByValue = (KVarray) => {
   return KVarray.sort((a, b) => {
-    if (a.metadata.value > b.metadata.value) {
+    if (a.metadata.value > b.metadata.value && a.name > b.name) {
       return -1;
     }
   });
