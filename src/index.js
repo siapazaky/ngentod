@@ -10,7 +10,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
-import { nbFuck, nbHug, nbKiss, nbKissChino } from "./utils/nightbotEmotes";
+import { nbFuck, nbFuckAngar, nbHug, nbHugAngar, nbKiss, nbKissAngar, nbKissChino } from "./utils/nightbotEmotes";
 import YouTube from "youtube-sr";
 // import twitterApi from "./twitterApi";
 
@@ -50,102 +50,62 @@ router.get("/educar/:user/:channel/:touser", async (req, env) => {
 
 // kiss
 router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
-  const { user, touser, channelID } = req.params;
-  let mensaje = null;
-  const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
+  const { user, touser } = req.params;
+  const channelId = req.params.channelID;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  let id_angar = "27457904";
-  let id_ahmed = "71492353"; // tests
   try {
-    const id_user = await twitch.getId(user);
-    const id_touser = await twitch.getId(touser);
-    const id_channel = channelID;
-    const key = id_touser + "-" + id_channel;
-    let counter = Number(await env.KISS.get(key));
-    if (id_channel == id_angar) {
-      let emotes_arr = ["angarShy","angarH", "angarJu", "angarOk"];
-      let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
-      if (id_user == id_touser) {
-        mensaje = `@${user} -> Acaso estás tratando de besarte a ti mismo? angarJu`;
-      } else {
-        counter = counter ? counter + 1 : 1;
-        await env.KISS.put(key, counter, {metadata: {value: counter},});
-        const veces = counter === 1 ? "beso" : "besos";
-        mensaje = `@${user} -> le has dado un beso a @${touser} . @${touser} ha recibido ${counter} ${veces} en total. ${emote}`;
-      }
+    const touserId = await twitch.getId(touser);
+    const userId = await twitch.getId(user);
+    const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
-      if (id_user == id_touser) {
-        mensaje = `@${user} -> Acaso estás tratando de besarte a ti mismo? BegWan`;
+      const count = select?.count;
+      const counter = count ? count + 1 : 1;
+      if (!select) {
+        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
       } else {
-        counter = counter ? counter + 1 : 1;
-        await env.KISS.put(key, counter, {metadata: {value: counter},});
-        const veces = counter === 1 ? "beso" : "besos";
-        mensaje = `@${user} -> le ha dado un beso a @${touser} . @${touser} ha recibido ${counter} ${veces} en total. BegWan`;
+        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
+      const veces = counter === 1 ? "beso" : "besos";
+      const emote = nbKissAngar[Math.floor(Math.random()*nbKissAngar.length)];
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    mensaje = error_msg;
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
-  return new JsResponse(`${mensaje}`);
 });
 
 // fuck
 router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
-  const { user, touser, channelID } = req.params;
+  const { user, touser } = req.params;
+  const channelId = req.params.channelID;
   const percent = getRandom(100);
-  let mensaje = null;
-  const error_msg = `${user}, El usuario que has mencionado no existe. FallHalp`;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  let id_angar = "27457904";
   try {
-    const id_user = await twitch.getId(user);
-    const id_touser = await twitch.getId(touser);
-    const id_channel = channelID;
-    const key = id_touser + "-" + id_channel;
-    let counter = Number(await env.FUCK.get(key));
-    if (id_channel == id_angar) {
-      let emotes_arr = ["angarJi","angarRico","angarGasm"];
-      let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
-      if (percent < 40) {
-        if (id_user == id_touser) {
-          mensaje = `@${user} -> Cómo? te quieres cog*r a ti mismo? angarMonkas`;
-        } else {
-          counter = counter ? counter + 1 : 1;
-          await env.FUCK.put(key, counter, {metadata: {value: counter},});
-          const veces = counter === 1 ? "vez" : "veces";
-          mensaje = `@${user} -> le has dado tremenda cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`;
-        }
+    const touserId = await twitch.getId(touser);
+    const userId = await twitch.getId(user);
+    const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+    } else if (percent < 40) {
+      const count = select?.count;
+      const counter = count ? count + 1 : 1;
+      if (!select) {
+        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
       } else {
-        if (id_user == id_touser) {
-          mensaje = `@${user} -> Cómo? te quieres cog*r a ti mismo? angarMonkas`;
-        } else {
-          mensaje = `@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`;
-        }
+        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
+      const veces = counter === 1 ? "vez" : "veces";
+      const emote = nbFuckAngar[Math.floor(Math.random()*nbFuckAngar.length)];
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      let emotes_arr = ["SeemsGood", "angarRico", "Kreygasm"];
-      let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
-      if (percent < 40) {
-        if (id_user == id_touser) {
-          mensaje = `${user}, Cómo? te quieres cog*r a ti mismo? CaitlynS`;
-        } else {
-          counter = counter ? counter + 1 : 1;
-          await env.FUCK.put(key, counter, {metadata: {value: counter},});
-          const veces = counter === 1 ? "vez" : "veces";
-          mensaje = `${user} le ha dado tremenda cog*da a ${touser}. Se han cog*do a ${touser} ${counter} ${veces} en total. ${emote}`;
-        }
-      } else {
-        if (id_user == id_touser) {
-          mensaje = `${user}, Cómo? te quieres cog*r a ti mismo? CaitlynS`;
-        } else {
-          mensaje = `${user}, ${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`;
-        }
-      }
+      return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
-    mensaje = error_msg;
+    console.log(e);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
-  return new JsResponse(`${mensaje}`);
 });
 
 // fuck v2
@@ -305,43 +265,30 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
 
 // hug
 router.get("/hug/:user/:channelID/:touser", async (req, env) => {
-  const { user, touser, channelID } = req.params;
-  let mensaje = null;
-  const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
+  const { user, touser } = req.params;
+  const channelId = req.params.channelID;
   const twitch = new twitchApi(env.client_id, env.client_secret);
-  let id_angar = "27457904";
-  let id_ahmed = "71492353"; // tests
   try {
-    const id_user = await twitch.getId(user);
-    const id_touser = await twitch.getId(touser);
-    const id_channel = channelID;
-    const key = id_touser + "-" + id_channel;
-    let counter = Number(await env.HUG.get(key));
-    if (id_channel == id_angar) {
-      let emotes_arr = ["angarShy","angarJu"];
-      let emote = emotes_arr[Math.floor(Math.random()*emotes_arr.length)];
-      if (id_user == id_touser) {
-        mensaje = `${user}, Estás intentando abrazarte a ti mismo? Acaso te sientes solo? angarSad`;
-      } else {
-        counter = counter ? counter + 1 : 1;
-        await env.HUG.put(key, counter, {metadata: {value: counter},});
-        const veces = counter === 1 ? "abrazo" : "abrazos";
-        mensaje = `${user} le ha dado un abrazo a ${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`;
-      }
+    const touserId = await twitch.getId(touser);
+    const userId = await twitch.getId(user);
+    const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+    if (userId === touserId) {
+      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
-      if (id_user == id_touser) {
-        mensaje = `${user}, Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`;
+      const count = select?.count;
+      const counter = count ? count + 1 : 1;
+      if (!select) {
+        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
       } else {
-        counter = counter ? counter + 1 : 1;
-        await env.HUG.put(key, counter, {metadata: {value: counter},});
-        const veces = counter === 1 ? "abrazo" : "abrazos";
-        mensaje = `${user} le ha dado un abrazo a ${touser}. ${touser} ha recibido ${counter} ${veces} en total. TwitchUnity`;
+        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
       }
+      const veces = counter === 1 ? "abrazo" : "abrazos";
+      const emote = nbHugAngar[Math.floor(Math.random()*nbHugAngar.length)];
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    mensaje = error_msg;
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
-  return new JsResponse(`${mensaje}`);
 });
 
 // spank
@@ -383,6 +330,14 @@ router.get("/user/:id_user", async (req, env) => {
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const username = await twitch.getUsername(id_user);
   return new JsResponse(username);
+});
+
+// Get Twitch Id by User
+router.get("/id/:user", async (req, env) => {
+  const { user } = req.params;
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const id = await twitch.getId(user);
+  return new JsResponse(id);
 });
 
 // get top values by Namespace
