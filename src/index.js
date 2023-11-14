@@ -57,6 +57,7 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -65,15 +66,15 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM kiss WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = nbKissAngar[Math.floor(Math.random()*nbKissAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado un beso a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -90,6 +91,7 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -98,17 +100,17 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM fuck WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuckAngar[Math.floor(Math.random()*nbFuckAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
@@ -125,6 +127,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
@@ -132,17 +135,17 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM fuck WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touser} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new JsResponse(`@${user} -> @${touser} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
@@ -158,6 +161,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
@@ -165,15 +169,15 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM hug WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -188,6 +192,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
@@ -195,15 +200,15 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM kiss WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
-      return new JsResponse(`@${user} -> Le has dado un beso a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -292,6 +297,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
     const avatar = touserData?.profile_image_url;
+    const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -300,15 +306,15 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
-        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touser}', '${channelId}')`).first();
+        await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
         await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM hug WHERE userId = ${touserId}`).first();
       } else {
-        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touser}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+        await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
         await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHugAngar[Math.floor(Math.random()*nbHugAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touser} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
@@ -435,15 +441,19 @@ router.get("/leaderboards/:channel?", async (req, env) => {
   const { limit } = req.query;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const id = await twitch.getId(channel);
+  const users = await env.NB.prepare("SELECT * FROM users").all();
   const prepareTable = async (table) => {
     const data = await env.NB.prepare(`SELECT * FROM ${table} WHERE channelId = '${id}' ORDER BY count DESC LIMIT ${limit}`).all();
     return data.results;
   };
-  const response = [
-    { type: "fuck", results: await prepareTable("fuck") },
-    { type: "hug", results: await prepareTable("hug") },
-    { type: "kiss", results: await prepareTable("kiss") }
-  ];
+  const response = {
+    lists: [
+      { type: "fuck", results: await prepareTable("fuck") },
+      { type: "hug", results: await prepareTable("hug") },
+      { type: "kiss", results: await prepareTable("kiss") }
+    ],
+    users: users.results
+  };
   return new JsResponse(JSON.stringify(response));
 });
 
