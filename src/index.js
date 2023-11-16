@@ -56,7 +56,7 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
@@ -90,13 +90,13 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
       return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
-    } else if (percent < 100) {
+    } else if (percent < 40) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
       if (!select) {
@@ -126,7 +126,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -160,7 +160,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -191,7 +191,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
@@ -296,7 +296,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
   try {
     const touserData = await twitch.getUserByName(touser);
     const touserId = touserData?.id;
-    const avatar = touserData?.profile_image_url;
+    const avatar = touserData?.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
     const touserName = touserData?.display_name;
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
