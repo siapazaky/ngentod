@@ -45,7 +45,7 @@ router.get("/educar/:user/:channel/:touser", async (req, env) => {
     }
   }
 
-  return new JsResponse(`${mensaje}`);
+  return new Response(`${mensaje}`);
 });
 
 // kiss
@@ -61,7 +61,7 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
+      return new Response(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -74,10 +74,10 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = nbKissAngar[Math.floor(Math.random()*nbKissAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -95,7 +95,7 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+      return new Response(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
     } else if (percent < 40) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -108,13 +108,13 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuckAngar[Math.floor(Math.random()*nbFuckAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new Response(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -130,7 +130,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+      return new Response(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
     } else if (percent < 40) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -143,13 +143,13 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
-      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new Response(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -164,7 +164,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+      return new Response(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -177,10 +177,10 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -195,7 +195,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
+      return new Response(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -208,10 +208,10 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
-      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -285,7 +285,7 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
   } catch (e) {
     mensaje = error_msg;
   }
-  return new JsResponse(`${mensaje}`);
+  return new Response(`${mensaje}`);
 });
 
 // hug
@@ -301,7 +301,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+      return new Response(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -314,10 +314,10 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHugAngar[Math.floor(Math.random()*nbHugAngar.length)];
-      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new Response(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -351,7 +351,7 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
   } catch (e) {
     mensaje = error_msg;
   }
-  return new JsResponse(`${mensaje}`);
+  return new Response(`${mensaje}`);
 });
 
 // Get Twitch User by ID
@@ -359,7 +359,7 @@ router.get("/user/:id_user", async (req, env) => {
   const { id_user } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const username = await twitch.getUsername(id_user);
-  return new JsResponse(username);
+  return new Response(username);
 });
 
 // Get Twitch Id by User
@@ -367,7 +367,7 @@ router.get("/id/:user", async (req, env) => {
   const { user } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const id = await twitch.getId(user);
-  return new JsResponse(id);
+  return new Response(id);
 });
 
 // get top values by Namespace
@@ -397,7 +397,7 @@ router.get("/top_users/angar/:env_var", async (req, env, ctx) => {
     return msg;
   })))).filter(top_users_limited_array => top_users_limited_array);
 
-  let response = new JsResponse(`[${top_users}]`);
+  let response = new Response(`[${top_users}]`);
   return response;
 });
 
@@ -432,7 +432,7 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
     }
   })))).filter(top_users_limited_array => top_users_limited_array);
 
-  let response = new JsResponse(`[${top_users}]`);
+  let response = new Response(`[${top_users}]`);
   return response;
 });
 
@@ -454,7 +454,7 @@ router.get("/leaderboards/:channel?", async (req, env) => {
     ],
     users: users.results
   };
-  return new JsResponse(JSON.stringify(response));
+  return new JsResponse(response);
 });
 
 router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
@@ -478,7 +478,7 @@ router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
 
     mensaje = `${user} le ha chupado la pija a ${query_touser}`;
   }
-  return new JsResponse(mensaje);
+  return new Response(mensaje);
 });
 
 // Openai GPT-3 chatbot AI
@@ -501,7 +501,7 @@ router.get("/ia/:prompt/:user", async (req, env) => {
     presence_penalty: 0,
   });
   console.log(response.data.choices[0].text);
-  return new JsResponse(`${response.data.choices[0].text.replaceAll("\n"," ")}`);
+  return new Response(`${response.data.choices[0].text.replaceAll("\n"," ")}`);
 });
 
 // Openai GPT-3 Translator AI  with Language detection
@@ -542,17 +542,17 @@ router.get("/ai/translate/:prompt", async (req, env) => {
   if (language == "es") {
     let to_language = "English";
     let response = await IA(to_language);
-    return new JsResponse(response);
+    return new Response(response);
   } else if (language == "en" || language == "fr") {
     let to_language = "Spanish";
     console.log(to_language);
     let response = await IA(to_language);
     console.log(response);
-    return new JsResponse(response);
+    return new Response(response);
   } else {
     let response = "Error. Unable to detect English, Spanish or French language in the message you have written";
     console.log(response);
-    return new JsResponse(response);
+    return new Response(response);
   }
 });
 
@@ -626,7 +626,7 @@ router.get("/dc/ai/:user/:prompt", async (req, env) => {
 
   console.log(response.data.usage);
   console.log(response.data.choices[0].message.content);
-  return new JsResponse(`${response.data.choices[0].message.content}`);
+  return new Response(`${response.data.choices[0].message.content}`);
 });
 
 router.get("/dc/image-generation/:prompt", async (req, env) => {
@@ -670,7 +670,7 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
       image_url = error.message;
     }
   }
-  return new JsResponse(image_url);
+  return new Response(image_url);
 });
 
 router.get("/dc/image-variation/:url", async (req, env) => {
@@ -749,7 +749,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       image_url = error.message;
     }
   }
-  return new JsResponse(JSON.stringify({original: cloudinary_url, variation: String(image_url)}));
+  return new JsResponse({original: cloudinary_url, variation: String(image_url)});
 });
 
 // Twitch Auth that redirect to oauth callback to save authenticated users
@@ -779,9 +779,9 @@ router.get("/twitch/user-oauth?", async (req, env) => {
     const { login, user_id } = await validation.json();
     const key = user_id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
-    return new JsResponse(`Usuario autenticado: ${login}\nID: ${user_id}`);
+    return new Response(`Usuario autenticado: ${login}\nID: ${user_id}`);
   }
-  return new JsResponse("Error. Authentication failed.");
+  return new Response("Error. Authentication failed.");
 });
 
 // Nightbot command: get Top Bits Cheerers Leaderboard with 3 pages
@@ -819,7 +819,7 @@ router.get("/leaderboard/:channelID/:page", async (req, env) => {
       } else {
         response = "Error, page not found.";
       }
-      return new JsResponse(response);
+      return new Response(response);
     }
   }
 });
@@ -830,7 +830,7 @@ router.get("/tags/:channelID", async (req, env) => {
   const actualtags = await twitch.getBroadcasterInfo(channelID);
   const response = String(actualtags.tags);
   console.log(response);
-  return new JsResponse(response);
+  return new Response(response);
 });
 
 // Nightbot command: Set Stream Tags
@@ -843,11 +843,11 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
     const response = `Etiquetas actuales: ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
-    return new JsResponse(response);
+    return new Response(response);
   }
   const auth_list = (await env.AUTH_USERS.list()).keys;
   const response = await SettedTwitchTagsResponse(env, channelID, auth_list, query_tags, tags_length);
-  return new JsResponse(response);
+  return new Response(response);
 });
 
 // Nightbot command: Add Mod
@@ -880,7 +880,7 @@ router.get("/addmod/:user_id/:channel_id/:touser", async (req, env) => {
   } else {
     response = "No tienes permiso para realizar esta acción.";
   }
-  return new JsResponse(response);
+  return new Response(response);
 });
 
 // Nightbot command: Remove Mod
@@ -910,14 +910,14 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
   } else {
     response = "No tienes permiso para realizar esta acción.";
   }
-  return new JsResponse(response);
+  return new Response(response);
 });
 
 // Nightbot command: Shoutout
 router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
   const { user, channel ,channel_id, touser } = req.params;
   if (user.toLowerCase() === touser.toLowerCase()) {
-    return new JsResponse(`@${user} -> No puedes hacer shoutout a ti mismo.`);
+    return new Response(`@${user} -> No puedes hacer shoutout a ti mismo.`);
   }
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const auth_list = (await env.AUTH_USERS.list()).keys;
@@ -938,7 +938,7 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
     }
     return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
   })))).filter(users_keys => users_keys);
-  return new JsResponse(response);
+  return new Response(response);
 });
 
 // Spotify Auth that redirect to oauth callback to save authenticated users
@@ -968,9 +968,9 @@ router.get("/spotify/user-oauth?", async (req, env) => {
     const key = "spotify_"+id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
     console.log(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
-    return new JsResponse(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+    return new Response(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
   } else {
-    return new JsResponse("Error. Authentication failed.");
+    return new Response("Error. Authentication failed.");
   }
 });
 
@@ -1001,10 +1001,10 @@ router.get("/spotify/current_playing/:channelID/:channel", async (req, env) => {
           return track;
         }
       })))).filter(users_keys => users_keys);
-      return new JsResponse(`La canción que ${channel} está escuchando en Spotify ahora mismo es: ${break_line} ${response}`);
+      return new Response(`La canción que ${channel} está escuchando en Spotify ahora mismo es: ${break_line} ${response}`);
     }
   } catch (e) {
-    return new JsResponse(`${channel} no está reproduciendo música en Spotify actualemnte.`);
+    return new Response(`${channel} no está reproduciendo música en Spotify actualemnte.`);
   }
 });
 
@@ -1046,9 +1046,9 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
       return await putR2(id);
     };
     const response = await comprobarCDN(uniqueId);
-    return new JsResponse(response);
+    return new Response(response);
   }
-  return new JsResponse("Error. No se ha encontrado un video.");
+  return new Response("Error. No se ha encontrado un video.");
 });
 
 router.get("/put-r2-chokis?", async (req, env, ctx) => {
@@ -1080,9 +1080,9 @@ router.get("/put-r2-chokis?", async (req, env, ctx) => {
       return await putR2(id);
     };
     const response = await comprobarCDN(uniqueId);
-    return new JsResponse(response);
+    return new Response(response);
   }
-  return new JsResponse("Error. No se ha encontrado un video.");
+  return new Response("Error. No se ha encontrado un video.");
 });
 
 router.get("/lol/live-game?", async (req, env,) => {
@@ -1338,9 +1338,9 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
     match.gameType = game_type.short_name;
     match.region = region.toUpperCase();
     match.startTime = live_game_data.gameStartTime;
-    return new JsResponse(JSON.stringify(match));
+    return new JsResponse(match);
   }
-  return new JsResponse(JSON.stringify(match));
+  return new JsResponse(match);
 });
 
 // LoL Profile (with Riot ID)
@@ -1351,101 +1351,99 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
   const rank_profile = [], match_history = [];
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
+  if (!route) {
+    return new JsResponse({status_code: 404, errorName: "region"});
+  }
   const cluster = riot.RegionalRouting(region);
   console.log(region, route, cluster);
-  if (name && tag && route) {
-    const ddversionsFetch = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
-    const ddversions = await ddversionsFetch.json();
-    const account = await riot.getAccountByRiotID(name, tag, cluster);
-    const puuid = account.puuid;
-    const summoner = await riot.getSummonerDataByPUUID(puuid, route);
-    if (!account?.status && !summoner?.status) {
-      const summoner_id = summoner.id;
-      const challenges_data = await riot.getChellengesData(puuid, route);
-      const titleId = challenges_data.preferences.title;
-      const challenges_assets = titleId !== "" ? await fetch("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/challenges.json") : null;
-      const challenges_json = titleId !== "" ? await challenges_assets.json() : null;
-      const titleName = titleId !== "" ? jp.query(challenges_json, `$..[?(@.itemId==${titleId})].name`)[0] : "";
-      profile_data = {
-        status_code: 200,
-        summonerId: summoner_id,
-        puuid: puuid,
-        riotName: account.gameName,
-        riotTag: account.tagLine,
-        summonerLevel: summoner.summonerLevel,
-        profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`,
-        region: region,
-        route: route,
-        titleName: titleName
-      };
-      const ranked_data = await riot.RankedData(summoner.id, route);
-      ranked_data.forEach((rankedData) => {
-        if (rankedData.queueType !== "CHERRY") {
-          const tier = riot.tierCase(rankedData.tier).full;
-          rank_profile.push({
-            leagueId: rankedData.leagueId,
-            queueType: rankedData.queueType,
-            tier: tier,
-            rank: rankedData.rank,
-            leaguePoints: rankedData.leaguePoints,
-            wins: rankedData.wins,
-            losses: rankedData.losses
-          });
-        }
-      });
-      const queue_sort = ["RANKED_SOLO_5x5", "RANKED_FLEX_SR"];
-      rank_profile.sort((a, b) => {
-        const soloIndex = queue_sort.indexOf(a?.queueType);
-        const flexIndex = queue_sort.indexOf(b?.queueType);
-        return soloIndex - flexIndex;
-      });
-      profile_data.rankProfile = rank_profile;
-      const matchesId = await riot.getMatches(puuid, cluster, 10);
-      console.log(matchesId);
-      const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions.n.champion}/data/es_MX/champion.json`);
-      const champion_data = await champion_list.json();
-      for (let i = 0; i < matchesId.length; i++) {
-        const match_data = await riot.getMatchFromId(matchesId[i], cluster);
-        if (match_data?.status?.status_code !== 404) {
-          const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
-          const queueId = match_data?.info?.queueId;
-          const queueName = riot.queueCase(queueId);
-          const participantId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`)[0];
-          const championId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`)[0];
-          const championName = jp.query(champion_data.data, `$..[?(@.key==${championId})].name`)[0];
-          const kills = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`)[0];
-          const deaths = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`)[0];
-          const assists = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`)[0];
-          const summoner1Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`)[0];
-          const summoner2Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`)[0];
-          const remake = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`)[0];
-          const win = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`)[0];
-          if (summoner_id == participantId) {
-            match_history.push({
-              orderId: i,
-              gameEndTimestamp: gameEndTimestamp,
-              queueName: queueName.short_name,
-              championName: championName,
-              kills: kills,
-              deaths: deaths,
-              assists: assists,
-              summoner1Id: summoner1Id,
-              summoner2Id: summoner2Id,
-              win: win,
-              remake: remake,
-              strTime: getDateAgoFromTimeStamp(gameEndTimestamp)
-            });
-          }
-        }
-      }
-      profile_data.matchesHistory = match_history;
-    } else {
-      profile_data = {status_code: 404, errorName: "riotId"};
-    }
-  } else {
-    profile_data = {status_code: 404, errorName: "region"};
+  const ddversionsFetch = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
+  const ddversions = await ddversionsFetch.json();
+  const account = await riot.getAccountByRiotID(name, tag, cluster);
+  const puuid = account.puuid;
+  const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+  if (account?.status || summoner?.status) {
+    return new JsResponse({status_code: 404, errorName: "riotId"});
   }
-  return new JsResponse(JSON.stringify(profile_data));
+  const summoner_id = summoner.id;
+  const challenges_data = await riot.getChellengesData(puuid, route);
+  const titleId = challenges_data.preferences.title;
+  const challenges_assets = titleId !== "" ? await fetch("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/challenges.json") : null;
+  const challenges_json = titleId !== "" ? await challenges_assets.json() : null;
+  const titleName = titleId !== "" ? jp.query(challenges_json, `$..[?(@.itemId==${titleId})].name`)[0] : "";
+  profile_data = {
+    status_code: 200,
+    summonerId: summoner_id,
+    puuid: puuid,
+    riotName: account.gameName,
+    riotTag: account.tagLine,
+    summonerLevel: summoner.summonerLevel,
+    profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`,
+    region: region,
+    route: route,
+    titleName: titleName
+  };
+  const ranked_data = await riot.RankedData(summoner.id, route);
+  ranked_data.forEach((rankedData) => {
+    if (rankedData.queueType !== "CHERRY") {
+      const tier = riot.tierCase(rankedData.tier).full;
+      rank_profile.push({
+        leagueId: rankedData.leagueId,
+        queueType: rankedData.queueType,
+        tier: tier,
+        rank: rankedData.rank,
+        leaguePoints: rankedData.leaguePoints,
+        wins: rankedData.wins,
+        losses: rankedData.losses
+      });
+    }
+  });
+  const queue_sort = ["RANKED_SOLO_5x5", "RANKED_FLEX_SR"];
+  rank_profile.sort((a, b) => {
+    const soloIndex = queue_sort.indexOf(a?.queueType);
+    const flexIndex = queue_sort.indexOf(b?.queueType);
+    return soloIndex - flexIndex;
+  });
+  profile_data.rankProfile = rank_profile;
+  const matchesId = await riot.getMatches(puuid, cluster, 10);
+  console.log(matchesId);
+  const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions.n.champion}/data/es_MX/champion.json`);
+  const champion_data = await champion_list.json();
+  for (let i = 0; i < matchesId.length; i++) {
+    const match_data = await riot.getMatchFromId(matchesId[i], cluster);
+    if (match_data?.status?.status_code !== 404) {
+      const gameEndTimestamp = match_data?.info?.gameEndTimestamp;
+      const queueId = match_data?.info?.queueId;
+      const queueName = riot.queueCase(queueId);
+      const participantId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summonerId`)[0];
+      const championId = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].championId`)[0];
+      const championName = jp.query(champion_data.data, `$..[?(@.key==${championId})].name`)[0];
+      const kills = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].kills`)[0];
+      const deaths = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].deaths`)[0];
+      const assists = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].assists`)[0];
+      const summoner1Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner1Id`)[0];
+      const summoner2Id = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].summoner2Id`)[0];
+      const remake = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].gameEndedInEarlySurrender`)[0];
+      const win = jp.query(match_data, `$..[?(@.summonerId=="${summoner_id}")].win`)[0];
+      if (summoner_id == participantId) {
+        match_history.push({
+          orderId: i,
+          gameEndTimestamp: gameEndTimestamp,
+          queueName: queueName.short_name,
+          championName: championName,
+          kills: kills,
+          deaths: deaths,
+          assists: assists,
+          summoner1Id: summoner1Id,
+          summoner2Id: summoner2Id,
+          win: win,
+          remake: remake,
+          strTime: getDateAgoFromTimeStamp(gameEndTimestamp)
+        });
+      }
+    }
+  }
+  profile_data.matchesHistory = match_history;
+  return new JsResponse(profile_data);
 });
 
 // LoL MMR (with Riot ID)
@@ -1454,92 +1452,90 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
   const region = (req.params.region).toLowerCase();
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
+  if (!route) {
+    return new JsResponse({status_code: 404, errorName: "region"});
+  }
   const cluster = riot.RegionalRouting(region);
   const queueId = queue.toLowerCase() === "flex" ? 440 : 420;
   const queueCase = riot.queueCase(queueId);
   let elo_data;
   const samples = [], elo_samples = [];
-  if (name && tag && route) {
-    const account = await riot.getAccountByRiotID(name, tag, cluster);
-    const puuid = account.puuid;
-    const summoner = await riot.getSummonerDataByPUUID(puuid, route);
-    if (!account?.status && !summoner?.status) {
-      const ddversionsF = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
-      const ddversions = await ddversionsF.json();
-      elo_data = {
-        riotName: account.gameName,
-        riotTag: account.tagLine,
-        summonerLevel: summoner.summonerLevel,
-        profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`,
-        region: region,
-        route: route
-      };
-      const ranked_data = await riot.RankedData(summoner.id, route);
-      console.log(ranked_data);
-      if (ranked_data.length === 0) {
-        elo_data.status_code = 404;
-        elo_data.errorName = "ranked";
-      } else {
-        for (const el of ranked_data) {
-          if (el?.queueType === queueCase.profile_rank_type) {
-            const eloTier = riot.tierCase(el.tier).full;
-            const eloRank = el.tier !== "MASTER" && el.tier !== "GRANDMASTER" && el.tier !== "CHALLENGER" ? el.rank : "";
-            elo_data.ranked = {
-              tier: eloTier,
-              rank: eloRank,
-              wins: el.wins,
-              losses: el.losses,
-              leaguePoints: el.leaguePoints,
-              queueName: queueCase.short_name
-            };
-            const matchesId = await riot.getMatches(puuid, cluster , 3, queueId);
-            for (const matches of matchesId) {
-              const match_data = await riot.getMatchFromId(matches, cluster);
-              const participants = match_data.info.participants;
-              participants.forEach((p) => {
-                if (p.puuid !== puuid) {
-                  samples.push(p.summonerId);
-                }
-              });
+  const account = await riot.getAccountByRiotID(name, tag, cluster);
+  const puuid = account.puuid;
+  const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+  if (account?.status || summoner?.status) {
+    return new JsResponse({status_code: 404, errorName: "riotId"});
+  }
+  const ddversionsF = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
+  const ddversions = await ddversionsF.json();
+  elo_data = {
+    riotName: account.gameName,
+    riotTag: account.tagLine,
+    summonerLevel: summoner.summonerLevel,
+    profileIconUrl: `https://ddragon.leagueoflegends.com/cdn/${ddversions.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`,
+    region: region,
+    route: route
+  };
+  const ranked_data = await riot.RankedData(summoner.id, route);
+  console.log(ranked_data);
+  if (ranked_data.length === 0) {
+    elo_data.status_code = 404;
+    elo_data.errorName = "ranked";
+  } else {
+    for (const el of ranked_data) {
+      if (el?.queueType === queueCase.profile_rank_type) {
+        const eloTier = riot.tierCase(el.tier).full;
+        const eloRank = el.tier !== "MASTER" && el.tier !== "GRANDMASTER" && el.tier !== "CHALLENGER" ? el.rank : "";
+        elo_data.ranked = {
+          tier: eloTier,
+          rank: eloRank,
+          wins: el.wins,
+          losses: el.losses,
+          leaguePoints: el.leaguePoints,
+          queueName: queueCase.short_name
+        };
+        const matchesId = await riot.getMatches(puuid, cluster , 3, queueId);
+        for (const matches of matchesId) {
+          const match_data = await riot.getMatchFromId(matches, cluster);
+          const participants = match_data.info.participants;
+          participants.forEach((p) => {
+            if (p.puuid !== puuid) {
+              samples.push(p.summonerId);
             }
-            const fixedSamples = [...new Set(samples)];
-            for (const s of fixedSamples) {
-              const ranked_data = await riot.RankedData(s, route);
-              for (const el of ranked_data) {
-                if (el?.queueType === queueCase.profile_rank_type) {
-                  elo_samples.push(eloValues[el.tier + " " + el.rank]);
-                }
-              }
+          });
+        }
+        const fixedSamples = [...new Set(samples)];
+        for (const s of fixedSamples) {
+          const ranked_data = await riot.RankedData(s, route);
+          for (const el of ranked_data) {
+            if (el?.queueType === queueCase.profile_rank_type) {
+              elo_samples.push(eloValues[el.tier + " " + el.rank]);
             }
-            console.log(elo_samples);
-            const suma = elo_samples.reduce((total, valor) => total + valor, 0);
-            const promedio = Math.round(suma / elo_samples.length);
-            for (const eloName in eloValues) {
-              if (eloValues[eloName] === promedio) {
-                const eloNameSplit = eloName.split(" ");
-                const eloTier = riot.tierCase(eloNameSplit[0]).full;
-                const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
-                elo_data.avg = {tier: eloTier, rank: eloRank};
-                break;
-              } else {
-                elo_data.avg = {tier: "Desconocido", rank: "Desconocido"};
-              }
-            }
-            elo_data.status_code = 200;
-            break;
-          } else {
-            elo_data.status_code = 404;
-            elo_data.errorName = "ranked";
           }
         }
+        console.log(elo_samples);
+        const suma = elo_samples.reduce((total, valor) => total + valor, 0);
+        const promedio = Math.round(suma / elo_samples.length);
+        for (const eloName in eloValues) {
+          if (eloValues[eloName] === promedio) {
+            const eloNameSplit = eloName.split(" ");
+            const eloTier = riot.tierCase(eloNameSplit[0]).full;
+            const eloRank = eloNameSplit[0] !== "MASTER" && eloNameSplit[0] !== "GRANDMASTER" && eloNameSplit[0] !== "CHALLENGER" ? eloNameSplit[1] : "";
+            elo_data.avg = {tier: eloTier, rank: eloRank};
+            break;
+          } else {
+            elo_data.avg = {tier: "Desconocido", rank: "Desconocido"};
+          }
+        }
+        elo_data.status_code = 200;
+        break;
+      } else {
+        elo_data.status_code = 404;
+        elo_data.errorName = "ranked";
       }
-    } else {
-      elo_data = {status_code: 404, errorName: "riotId"};
     }
-  } else {
-    elo_data = {status_code: 404, errorName: "region"};
   }
-  return new JsResponse(JSON.stringify(elo_data));
+  return new JsResponse(elo_data);
 });
 
 router.get("/rank?", async (req, env,) => {
@@ -1588,9 +1584,9 @@ router.get("/imgur/user-oauth?", async (req, env) => {
     const key = "imgur_"+account_username;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
     console.log(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
-    return new JsResponse(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+    return new Response(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
   } else {
-    return new JsResponse("Error. Authentication failed.");
+    return new Response("Error. Authentication failed.");
   }
 });
 
@@ -1619,7 +1615,7 @@ router.get("/imgur/me/gallery", async (req, env) => {
   };
   json = JSON.stringify(json);
   console.log(json);
-  return new JsResponse(json);
+  return new Response(json);
 });
 
 
@@ -1628,9 +1624,9 @@ router.get("/d1/insert-imgurdiscord?", async (req, env) => {
   if (query.imgurId && query.discordUser && query.title && query.timestamp && query.command) {
     const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser, title, timestamp, command) values ('${query.imgurId}', '${query.discordUser}','${query.title}', '${query.timestamp}', '${query.command}')`);
     const data = await insertar.first();
-    return new JsResponse(data);
+    return new Response(data);
   } else {
-    return new JsResponse("No se han encontrado las consultas requeridas en el url");
+    return new Response("No se han encontrado las consultas requeridas en el url");
   }
 });
 
@@ -1724,7 +1720,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
     }
   };
 
-  return new JsResponse(await retryScrap());
+  return new Response(await retryScrap());
 });
 
 router.get("/dc/facebook-video-scrapper?", async (req, env) => {
@@ -1838,7 +1834,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
     }
   };
 
-  return new JsResponse(await retryScrap());
+  return new Response(await retryScrap());
 });
 
 router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
@@ -1889,10 +1885,10 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
         }
       }
     };
-    return new JsResponse(await retryScrap());
+    return new Response(await retryScrap());
   } else {
     console.log("no es link de tiktok");
-    return new JsResponse("Url no válida");
+    return new Response("Url no válida");
   }
 });
 
@@ -1949,14 +1945,14 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
         caption: caption,
         status: 200
       };
-      return new JsResponse(JSON.stringify(json_response));
+      return new JsResponse(json_response);
     } else {
       console.log("no es video");
-      return new JsResponse(JSON.stringify({ status: 404 }));
+      return new JsResponse({ status: 404 });
     }
   } else {
     console.log("no es link de twitter");
-    return new JsResponse("Url no válida");
+    return new Response("Url no válida");
   }
 });
 
@@ -2077,7 +2073,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     }
   };
   const response = await comprobarFetch(fetched);
-  return new JsResponse(response.output[0]);
+  return new Response(response.output[0]);
 });
 
 router.get("/dc/kick-live?", async (req, env) => {
@@ -2102,7 +2098,7 @@ router.get("/dc/kick-live?", async (req, env) => {
     console.log("No está en vivo, hay 1 en KV, se hace put 0 en KV");
     response = {notificar: false};
   }
-  return new JsResponse(JSON.stringify(response));
+  return new JsResponse(response);
 });
 
 // Nightbot command: Followage
@@ -2119,39 +2115,45 @@ router.get("/followage/:channel/:touser?", async (req, env) => {
     const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
     if (data?.followed_at) {
       const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-      return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
+      return new Response(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
     }
-    return new JsResponse(`@${touser} no está siguiendo a ${channel}`);
+    return new Response(`@${touser} no está siguiendo a ${channel}`);
   } else if (!auth && moderator_id) {
-    return new JsResponse(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+    return new Response(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
   }
-  return new JsResponse(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+  return new Response(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
 });
 
-// Lol Champion Masteries
-router.get("/lol/masteries-for-discord?", async (req, env) => {
-  const count = 10, riot = new riotApi(env.riot_token);
-  const { query } = req;
-  const summoner = query.summoner;
-  const region = riot.RegionNameRouting(query.region);
-  const { name, puuid, profileIconId, status } = await riot.SummonerDataByName(summoner, region);
-  if (status?.status_code === 404) {
-    return new JsResponse(JSON.stringify({status_code: 404, errorName: "summoner"}));
+// Lol Champion Masteries (with Riot ID)
+router.get("/lol/masteries/:region/:name/:tag", async (req, env) => {
+  const { name, tag } = req.params;
+  const region = (req.params.region).toLowerCase();
+  const riot = new riotApi(env.riot_token);
+  const route = riot.RegionNameRouting(region);
+  if (!route) {
+    return new JsResponse({status_code: 404, errorName: "region"});
   }
-  const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${query.region.toLowerCase()}.json`);
+  const cluster = riot.RegionalRouting(region);
+  const account = await riot.getAccountByRiotID(name, tag, cluster);
+  const puuid = account.puuid;
+  const summoner = await riot.getSummonerDataByPUUID(puuid, route);
+  if (account?.status || summoner?.status) {
+    return new JsResponse({status_code: 404, errorName: "riotId"});
+  }
+  const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
   const ddversions_data = await ddversions.json();
   const champion_list = await fetch(`https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.champion}/data/es_MX/champion.json`);
   const champion_data = await champion_list.json();
-  const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${profileIconId}.png`;
-  const masteriesData = await riot.getChampionMasteriesByPUUID(puuid, region, count);
-  if (masteriesData?.status?.status_code === 404) {
-    return new JsResponse(JSON.stringify({status_code: 404, errorName: "mastery"}));
+  const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`;
+  const masteriesData = await riot.getChampionMasteriesByPUUID(puuid, route, 10);
+  if (masteriesData?.status) {
+    return new JsResponse({status_code: 404, errorName: "mastery"});
   }
-  console.log(masteriesData);
-  const masteryScore = await riot.getChampionMasteryScoreByPUUID(puuid, region);
+  const masteryScore = await riot.getChampionMasteryScoreByPUUID(puuid, route);
   const data = {
-    summonerName: name,
-    region: query.region,
+    riotName: account.gameName,
+    riotTag: account.tagLine,
+    region: region,
     profileIconUrl: icon,
     score: masteryScore,
     status_code: 200
@@ -2170,7 +2172,7 @@ router.get("/lol/masteries-for-discord?", async (req, env) => {
     });
   });
   data.masteries = masteries;
-  return new JsResponse(JSON.stringify(data));
+  return new JsResponse(data);
 });
 
 router.get("/dc/twitch-video-scrapper?", async (req, env) => {
@@ -2193,7 +2195,7 @@ router.get("/dc/twitch-video-scrapper?", async (req, env) => {
   } catch (e) {
     obj.status = 404;
   }
-  return new JsResponse(JSON.stringify(obj));
+  return new JsResponse(obj);
 });
 
 router.get("/dc/yt-info?", async (req, env) => {
@@ -2204,16 +2206,16 @@ router.get("/dc/yt-info?", async (req, env) => {
   try {
     const ytInfo = await YouTube.getVideo("https://youtu.be/" + id);
     const short_url = "https://youtu.be/" + ytInfo.id;
-    return new JsResponse(JSON.stringify({
+    return new JsResponse({
       caption: ytInfo.title,
       duration: ytInfo.duration,
       short_url: short_url,
       status: 200
-    }));
+    });
   } catch (e) {
-    return new JsResponse(JSON.stringify({
+    return new JsResponse({
       status: 404
-    }));
+    });
   }
 });
 
