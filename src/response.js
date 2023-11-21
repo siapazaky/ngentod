@@ -8,7 +8,7 @@ class JsResponse extends Response {
         "Cache-Control": opt?.cache
       }
     };
-    super(body, options);
+    super(JSON.stringify(body), options);
   }
 }
 
