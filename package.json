@@ -20,6 +20,6 @@
     "youtube-sr": "^4.3.9"
   },
   "devDependencies": {
-    "wrangler": "^3.16.0"
+    "wrangler": "^3.17.1"
   }
 }
