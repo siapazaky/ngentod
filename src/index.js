@@ -1773,7 +1773,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         });
         const json_object = {
           short_url: "https://facebook.com/watch/?v=" + data?.id,
-          video_url: data?.browser_native_hd_url,
+          video_url: data?.browser_native_hd_url ? data?.browser_native_hd_url : data?.browser_native_sd_url,
           caption: caption,
           status: 200
         };
@@ -1798,7 +1798,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
         });
         const json_object = {
           short_url: data?.shareable_url.replace("www.",""),
-          video_url: data?.playback_video?.browser_native_hd_url,
+          video_url: data?.playback_video?.browser_native_hd_url ? data?.playback_video?.browser_native_hd_url : data?.playback_video?.browser_native_sd_url,
           caption: caption,
           status: 200
         };
