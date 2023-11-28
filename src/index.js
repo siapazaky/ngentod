@@ -1021,11 +1021,9 @@ router.get("/put-r2-image", async (req, env,) => {
 router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
   const { query } = req;
   const video_url = query.video_url;
-  console.log(video_url);
   if (video_url) {
     const f = await fetch(video_url);
-    const b = await f.arrayBuffer();
-    console.log(b.byteLength);
+    const b = await f.blob();
     const type = "video/mp4";
     const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
     const headers = new Headers(httpHeaders);
@@ -1059,7 +1057,7 @@ router.get("/put-r2-chokis?", async (req, env, ctx) => {
   console.log(video_url);
   if (video_url) {
     const f = await fetch(video_url);
-    const b = await f.arrayBuffer();
+    const b = await f.blob();
     const type = "video/mp4";
     const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
     const headers = new Headers(httpHeaders);
