@@ -2,6 +2,7 @@ import { Router } from "itty-router";
 import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty, SettedTwitchTagsResponse } from "./utils/helpers";
 import twitchApi from "./apis/twitchApi";
 import JsResponse from "./response";
+import JsonResponse from "./jsonResponse";
 import { Configuration, OpenAIApi } from "openai";
 import fetchAdapter from "@haverstack/axios-fetch-adapter";
 import spotifyApi from "./apis/spotifyApi";
@@ -45,7 +46,7 @@ router.get("/educar/:user/:channel/:touser", async (req, env) => {
     }
   }
 
-  return new Response(`${mensaje}`);
+  return new JsResponse(`${mensaje}`);
 });
 
 // kiss
@@ -61,7 +62,7 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
+      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -74,10 +75,10 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = nbKissAngar[Math.floor(Math.random()*nbKissAngar.length)];
-      return new Response(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -95,7 +96,7 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
     } else if (percent < 40) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -108,13 +109,13 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuckAngar[Math.floor(Math.random()*nbFuckAngar.length)];
-      return new Response(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new Response(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -130,7 +131,7 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
+      return new JsResponse(`@${user} -> Cómo? estás intentando cog*rte a ti mismo? CaitlynS`);
     } else if (percent < 40) {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -143,13 +144,13 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "vez" : "veces";
       const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
-      return new Response(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado una cog*da a @${touserName} . Ha sido cog*do ${counter} ${veces} en total. ${emote}`);
     } else {
-      return new Response(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
+      return new JsResponse(`@${user} -> @${touserName} Se ha logrado escapar. Quizás la proxima vez. BloodTrail`);
     }
   } catch (e) {
     console.log(e);
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -164,7 +165,7 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -177,10 +178,10 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
-      return new Response(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -195,7 +196,7 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const touserName = touserData.display_name;
     const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
+      return new JsResponse(`@${user} -> Acaso estás tratando de besarte a ti mismo? uuh`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -208,10 +209,10 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "beso" : "besos";
       const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
-      return new Response(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -285,7 +286,7 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
   } catch (e) {
     mensaje = error_msg;
   }
-  return new Response(`${mensaje}`);
+  return new JsResponse(`${mensaje}`);
 });
 
 // hug
@@ -301,7 +302,7 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
     const userId = await twitch.getId(user);
     const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
     if (userId === touserId) {
-      return new Response(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
+      return new JsResponse(`@${user} -> Estás intentando abrazarte a ti mismo? Acaso te sientes solo? PoroSad`);
     } else {
       const count = select?.count;
       const counter = count ? count + 1 : 1;
@@ -314,10 +315,10 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
       }
       const veces = counter === 1 ? "abrazo" : "abrazos";
       const emote = nbHugAngar[Math.floor(Math.random()*nbHugAngar.length)];
-      return new Response(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+      return new JsResponse(`@${user} -> Le has dado un abrazo a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
     }
   } catch (e) {
-    return new Response(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
 });
 
@@ -351,7 +352,7 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
   } catch (e) {
     mensaje = error_msg;
   }
-  return new Response(`${mensaje}`);
+  return new JsResponse(`${mensaje}`);
 });
 
 // Get Twitch User by ID
@@ -359,7 +360,7 @@ router.get("/user/:id_user", async (req, env) => {
   const { id_user } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const username = await twitch.getUsername(id_user);
-  return new Response(username);
+  return new JsResponse(username);
 });
 
 // Get Twitch Id by User
@@ -367,7 +368,7 @@ router.get("/id/:user", async (req, env) => {
   const { user } = req.params;
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const id = await twitch.getId(user);
-  return new Response(id);
+  return new JsResponse(id);
 });
 
 // get top values by Namespace
@@ -397,7 +398,7 @@ router.get("/top_users/angar/:env_var", async (req, env, ctx) => {
     return msg;
   })))).filter(top_users_limited_array => top_users_limited_array);
 
-  let response = new Response(`[${top_users}]`);
+  let response = new JsResponse(`[${top_users}]`);
   return response;
 });
 
@@ -432,7 +433,7 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
     }
   })))).filter(top_users_limited_array => top_users_limited_array);
 
-  let response = new Response(`[${top_users}]`);
+  let response = new JsResponse(`[${top_users}]`);
   return response;
 });
 
@@ -454,7 +455,7 @@ router.get("/leaderboards/:channel?", async (req, env) => {
     ],
     users: users.results
   };
-  return new JsResponse(response);
+  return new JsonResponse(response);
 });
 
 router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
@@ -478,7 +479,7 @@ router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
 
     mensaje = `${user} le ha chupado la pija a ${query_touser}`;
   }
-  return new Response(mensaje);
+  return new JsResponse(mensaje);
 });
 
 // Openai GPT-3 chatbot AI
@@ -501,7 +502,7 @@ router.get("/ia/:prompt/:user", async (req, env) => {
     presence_penalty: 0,
   });
   console.log(response.data.choices[0].text);
-  return new Response(`${response.data.choices[0].text.replaceAll("\n"," ")}`);
+  return new JsResponse(`${response.data.choices[0].text.replaceAll("\n"," ")}`);
 });
 
 // Openai GPT-3 Translator AI  with Language detection
@@ -542,17 +543,17 @@ router.get("/ai/translate/:prompt", async (req, env) => {
   if (language == "es") {
     let to_language = "English";
     let response = await IA(to_language);
-    return new Response(response);
+    return new JsResponse(response);
   } else if (language == "en" || language == "fr") {
     let to_language = "Spanish";
     console.log(to_language);
     let response = await IA(to_language);
     console.log(response);
-    return new Response(response);
+    return new JsResponse(response);
   } else {
     let response = "Error. Unable to detect English, Spanish or French language in the message you have written";
     console.log(response);
-    return new Response(response);
+    return new JsResponse(response);
   }
 });
 
@@ -626,7 +627,7 @@ router.get("/dc/ai/:user/:prompt", async (req, env) => {
 
   console.log(response.data.usage);
   console.log(response.data.choices[0].message.content);
-  return new Response(`${response.data.choices[0].message.content}`);
+  return new JsResponse(`${response.data.choices[0].message.content}`);
 });
 
 router.get("/dc/image-generation/:prompt", async (req, env) => {
@@ -670,7 +671,7 @@ router.get("/dc/image-generation/:prompt", async (req, env) => {
       image_url = error.message;
     }
   }
-  return new Response(image_url);
+  return new JsResponse(image_url);
 });
 
 router.get("/dc/image-variation/:url", async (req, env) => {
@@ -749,7 +750,7 @@ router.get("/dc/image-variation/:url", async (req, env) => {
       image_url = error.message;
     }
   }
-  return new JsResponse({original: cloudinary_url, variation: String(image_url)});
+  return new JsonResponse({original: cloudinary_url, variation: String(image_url)});
 });
 
 // Twitch Auth that redirect to oauth callback to save authenticated users
@@ -779,9 +780,9 @@ router.get("/twitch/user-oauth?", async (req, env) => {
     const { login, user_id } = await validation.json();
     const key = user_id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
-    return new Response(`Usuario autenticado: ${login}\nID: ${user_id}`);
+    return new JsResponse(`Usuario autenticado: ${login}\nID: ${user_id}`);
   }
-  return new Response("Error. Authentication failed.");
+  return new JsResponse("Error. Authentication failed.");
 });
 
 // Nightbot command: get Top Bits Cheerers Leaderboard with 3 pages
@@ -819,7 +820,7 @@ router.get("/leaderboard/:channelID/:page", async (req, env) => {
       } else {
         response = "Error, page not found.";
       }
-      return new Response(response);
+      return new JsResponse(response);
     }
   }
 });
@@ -830,7 +831,7 @@ router.get("/tags/:channelID", async (req, env) => {
   const actualtags = await twitch.getBroadcasterInfo(channelID);
   const response = String(actualtags.tags);
   console.log(response);
-  return new Response(response);
+  return new JsResponse(response);
 });
 
 // Nightbot command: Set Stream Tags
@@ -843,11 +844,11 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
     const response = `Etiquetas actuales: ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
-    return new Response(response);
+    return new JsResponse(response);
   }
   const auth_list = (await env.AUTH_USERS.list()).keys;
   const response = await SettedTwitchTagsResponse(env, channelID, auth_list, query_tags, tags_length);
-  return new Response(response);
+  return new JsResponse(response);
 });
 
 // Nightbot command: Add Mod
@@ -880,7 +881,7 @@ router.get("/addmod/:user_id/:channel_id/:touser", async (req, env) => {
   } else {
     response = "No tienes permiso para realizar esta acción.";
   }
-  return new Response(response);
+  return new JsResponse(response);
 });
 
 // Nightbot command: Remove Mod
@@ -910,14 +911,14 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
   } else {
     response = "No tienes permiso para realizar esta acción.";
   }
-  return new Response(response);
+  return new JsResponse(response);
 });
 
 // Nightbot command: Shoutout
 router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
   const { user, channel ,channel_id, touser } = req.params;
   if (user.toLowerCase() === touser.toLowerCase()) {
-    return new Response(`@${user} -> No puedes hacer shoutout a ti mismo.`);
+    return new JsResponse(`@${user} -> No puedes hacer shoutout a ti mismo.`);
   }
   const twitch = new twitchApi(env.client_id, env.client_secret);
   const auth_list = (await env.AUTH_USERS.list()).keys;
@@ -938,7 +939,7 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
     }
     return `/announce Todos vayan a seguir a @${touser} https://twitch.tv/${touser.toLowerCase()}`;
   })))).filter(users_keys => users_keys);
-  return new Response(response);
+  return new JsResponse(response);
 });
 
 // Spotify Auth that redirect to oauth callback to save authenticated users
@@ -968,9 +969,9 @@ router.get("/spotify/user-oauth?", async (req, env) => {
     const key = "spotify_"+id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
     console.log(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
-    return new Response(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+    return new JsResponse(`User: ${display_name}\nID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
   } else {
-    return new Response("Error. Authentication failed.");
+    return new JsResponse("Error. Authentication failed.");
   }
 });
 
@@ -1001,10 +1002,10 @@ router.get("/spotify/current_playing/:channelID/:channel", async (req, env) => {
           return track;
         }
       })))).filter(users_keys => users_keys);
-      return new Response(`La canción que ${channel} está escuchando en Spotify ahora mismo es: ${break_line} ${response}`);
+      return new JsResponse(`La canción que ${channel} está escuchando en Spotify ahora mismo es: ${break_line} ${response}`);
     }
   } catch (e) {
-    return new Response(`${channel} no está reproduciendo música en Spotify actualemnte.`);
+    return new JsResponse(`${channel} no está reproduciendo música en Spotify actualemnte.`);
   }
 });
 
@@ -1014,7 +1015,7 @@ router.get("/put-r2-image", async (req, env,) => {
   const data = await fetch(url);
   const imageBlob = await data.blob();
   const object = await env.R2gpt.put("openaiIMGG", imageBlob);
-  return new Response(object);
+  return new JsResponse(object);
 });
 
 router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
@@ -1024,6 +1025,7 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
   if (video_url) {
     const f = await fetch(video_url);
     const b = await f.arrayBuffer();
+    console.log(b.byteLength);
     const type = "video/mp4";
     const httpHeaders = {"Content-Type": type, "Content-Disposition": "attachment"};
     const headers = new Headers(httpHeaders);
@@ -1046,9 +1048,9 @@ router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
       return await putR2(id);
     };
     const response = await comprobarCDN(uniqueId);
-    return new Response(response);
+    return new JsResponse(response);
   }
-  return new Response("Error. No se ha encontrado un video.");
+  return new JsResponse("Error. No se ha encontrado un video.");
 });
 
 router.get("/put-r2-chokis?", async (req, env, ctx) => {
@@ -1080,9 +1082,9 @@ router.get("/put-r2-chokis?", async (req, env, ctx) => {
       return await putR2(id);
     };
     const response = await comprobarCDN(uniqueId);
-    return new Response(response);
+    return new JsResponse(response);
   }
-  return new Response("Error. No se ha encontrado un video.");
+  return new JsResponse("Error. No se ha encontrado un video.");
 });
 
 router.get("/lol/live-game?", async (req, env,) => {
@@ -1213,7 +1215,7 @@ router.get("/lol/live-game?", async (req, env,) => {
     }
   };
   console.log(data);
-  return new Response(data);
+  return new JsResponse(data);
 });
 
 router.get("/lol/live-game-for-discord?", async (req, env,) => {
@@ -1338,9 +1340,9 @@ router.get("/lol/live-game-for-discord?", async (req, env,) => {
     match.gameType = game_type.short_name;
     match.region = region.toUpperCase();
     match.startTime = live_game_data.gameStartTime;
-    return new JsResponse(match);
+    return new JsonResponse(match);
   }
-  return new JsResponse(match);
+  return new JsonResponse(match);
 });
 
 // LoL Profile (with Riot ID)
@@ -1352,7 +1354,7 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
   if (!route) {
-    return new JsResponse({status_code: 404, errorName: "region"});
+    return new JsonResponse({status_code: 404, errorName: "region"});
   }
   const cluster = riot.RegionalRouting(region);
   console.log(region, route, cluster);
@@ -1362,7 +1364,7 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
   const puuid = account.puuid;
   const summoner = await riot.getSummonerDataByPUUID(puuid, route);
   if (account?.status || summoner?.status) {
-    return new JsResponse({status_code: 404, errorName: "riotId"});
+    return new JsonResponse({status_code: 404, errorName: "riotId"});
   }
   const summoner_id = summoner.id;
   const challenges_data = await riot.getChellengesData(puuid, route);
@@ -1443,7 +1445,7 @@ router.get("/lol/profile/:region/:name/:tag", async (req, env,) => {
     }
   }
   profile_data.matchesHistory = match_history;
-  return new JsResponse(profile_data);
+  return new JsonResponse(profile_data);
 });
 
 // LoL MMR (with Riot ID)
@@ -1453,7 +1455,7 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
   if (!route) {
-    return new JsResponse({status_code: 404, errorName: "region"});
+    return new JsonResponse({status_code: 404, errorName: "region"});
   }
   const cluster = riot.RegionalRouting(region);
   const queueId = queue.toLowerCase() === "flex" ? 440 : 420;
@@ -1464,7 +1466,7 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
   const puuid = account.puuid;
   const summoner = await riot.getSummonerDataByPUUID(puuid, route);
   if (account?.status || summoner?.status) {
-    return new JsResponse({status_code: 404, errorName: "riotId"});
+    return new JsonResponse({status_code: 404, errorName: "riotId"});
   }
   const ddversionsF = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
   const ddversions = await ddversionsF.json();
@@ -1535,7 +1537,7 @@ router.get("/lol/mmr/:region/:name/:tag/:queue", async (req, env,) => {
       }
     }
   }
-  return new JsResponse(elo_data);
+  return new JsonResponse(elo_data);
 });
 
 router.get("/rank?", async (req, env,) => {
@@ -1563,7 +1565,7 @@ router.get("/rank?", async (req, env,) => {
   const valData = await valFetch.text();
   const valRankStrings = valData.split(" ");
   const valRank = `${riot.tierCase(valRankStrings[0].toUpperCase()).full} ${valRankStrings[1]}`;
-  return new Response(`LoL: ${lolRank} | Valo: ${valRank}`);
+  return new JsResponse(`LoL: ${lolRank} | Valo: ${valRank}`);
 });
 
 router.get("/imgur/auth", async (req, env) => {
@@ -1584,9 +1586,9 @@ router.get("/imgur/user-oauth?", async (req, env) => {
     const key = "imgur_"+account_username;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
     console.log(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
-    return new Response(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
+    return new JsResponse(`ID: ${key}\nAccess Token: ${access_token}\nRefresh Token: ${refresh_token}\nExpires in: ${expires_in}`);
   } else {
-    return new Response("Error. Authentication failed.");
+    return new JsResponse("Error. Authentication failed.");
   }
 });
 
@@ -1615,7 +1617,7 @@ router.get("/imgur/me/gallery", async (req, env) => {
   };
   json = JSON.stringify(json);
   console.log(json);
-  return new Response(json);
+  return new JsResponse(json);
 });
 
 
@@ -1624,9 +1626,9 @@ router.get("/d1/insert-imgurdiscord?", async (req, env) => {
   if (query.imgurId && query.discordUser && query.title && query.timestamp && query.command) {
     const insertar = env.ImgurDiscord.prepare(`insert into imgur_discord (imgurId, discordUser, title, timestamp, command) values ('${query.imgurId}', '${query.discordUser}','${query.title}', '${query.timestamp}', '${query.command}')`);
     const data = await insertar.first();
-    return new Response(data);
+    return new JsResponse(data);
   } else {
-    return new Response("No se han encontrado las consultas requeridas en el url");
+    return new JsResponse("No se han encontrado las consultas requeridas en el url");
   }
 });
 
@@ -1720,7 +1722,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
     }
   };
 
-  return new Response(await retryScrap());
+  return new JsResponse(await retryScrap());
 });
 
 router.get("/dc/facebook-video-scrapper?", async (req, env) => {
@@ -1834,7 +1836,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
     }
   };
 
-  return new Response(await retryScrap());
+  return new JsResponse(await retryScrap());
 });
 
 router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
@@ -1885,10 +1887,10 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
         }
       }
     };
-    return new Response(await retryScrap());
+    return new JsResponse(await retryScrap());
   } else {
     console.log("no es link de tiktok");
-    return new Response("Url no válida");
+    return new JsResponse("Url no válida");
   }
 });
 
@@ -1945,14 +1947,14 @@ router.get("/dc/twitter-video-scrapper?", async (req, env) => {
         caption: caption,
         status: 200
       };
-      return new JsResponse(json_response);
+      return new JsonResponse(json_response);
     } else {
       console.log("no es video");
-      return new JsResponse({ status: 404 });
+      return new JsonResponse({ status: 404 });
     }
   } else {
     console.log("no es link de twitter");
-    return new Response("Url no válida");
+    return new JsResponse("Url no válida");
   }
 });
 
@@ -2073,7 +2075,7 @@ router.get("/dc/stable-diffusion?", async (req, env, ctx) => {
     }
   };
   const response = await comprobarFetch(fetched);
-  return new Response(response.output[0]);
+  return new JsResponse(response.output[0]);
 });
 
 router.get("/dc/kick-live?", async (req, env) => {
@@ -2098,7 +2100,7 @@ router.get("/dc/kick-live?", async (req, env) => {
     console.log("No está en vivo, hay 1 en KV, se hace put 0 en KV");
     response = {notificar: false};
   }
-  return new JsResponse(response);
+  return new JsonResponse(response);
 });
 
 // Nightbot command: Followage
@@ -2115,13 +2117,13 @@ router.get("/followage/:channel/:touser?", async (req, env) => {
     const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
     if (data?.followed_at) {
       const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-      return new Response(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
+      return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
     }
-    return new Response(`@${touser} no está siguiendo a ${channel}`);
+    return new JsResponse(`@${touser} no está siguiendo a ${channel}`);
   } else if (!auth && moderator_id) {
-    return new Response(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+    return new JsResponse(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
   }
-  return new Response(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+  return new JsResponse(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
 });
 
 // Lol Champion Masteries (with Riot ID)
@@ -2131,14 +2133,14 @@ router.get("/lol/masteries/:region/:name/:tag", async (req, env) => {
   const riot = new riotApi(env.riot_token);
   const route = riot.RegionNameRouting(region);
   if (!route) {
-    return new JsResponse({status_code: 404, errorName: "region"});
+    return new JsonResponse({status_code: 404, errorName: "region"});
   }
   const cluster = riot.RegionalRouting(region);
   const account = await riot.getAccountByRiotID(name, tag, cluster);
   const puuid = account.puuid;
   const summoner = await riot.getSummonerDataByPUUID(puuid, route);
   if (account?.status || summoner?.status) {
-    return new JsResponse({status_code: 404, errorName: "riotId"});
+    return new JsonResponse({status_code: 404, errorName: "riotId"});
   }
   const ddversions = await fetch(`https://ddragon.leagueoflegends.com/realms/${region}.json`);
   const ddversions_data = await ddversions.json();
@@ -2147,7 +2149,7 @@ router.get("/lol/masteries/:region/:name/:tag", async (req, env) => {
   const icon = `https://ddragon.leagueoflegends.com/cdn/${ddversions_data.n.profileicon}/img/profileicon/${summoner.profileIconId}.png`;
   const masteriesData = await riot.getChampionMasteriesByPUUID(puuid, route, 10);
   if (masteriesData?.status) {
-    return new JsResponse({status_code: 404, errorName: "mastery"});
+    return new JsonResponse({status_code: 404, errorName: "mastery"});
   }
   const masteryScore = await riot.getChampionMasteryScoreByPUUID(puuid, route);
   const data = {
@@ -2172,7 +2174,7 @@ router.get("/lol/masteries/:region/:name/:tag", async (req, env) => {
     });
   });
   data.masteries = masteries;
-  return new JsResponse(data);
+  return new JsonResponse(data);
 });
 
 router.get("/dc/twitch-video-scrapper?", async (req, env) => {
@@ -2195,7 +2197,7 @@ router.get("/dc/twitch-video-scrapper?", async (req, env) => {
   } catch (e) {
     obj.status = 404;
   }
-  return new JsResponse(obj);
+  return new JsonResponse(obj);
 });
 
 router.get("/dc/yt-info?", async (req, env) => {
@@ -2206,20 +2208,20 @@ router.get("/dc/yt-info?", async (req, env) => {
   try {
     const ytInfo = await YouTube.getVideo("https://youtu.be/" + id);
     const short_url = "https://youtu.be/" + ytInfo.id;
-    return new JsResponse({
+    return new JsonResponse({
       caption: ytInfo.title,
       duration: ytInfo.duration,
       short_url: short_url,
       status: 200
     });
   } catch (e) {
-    return new JsResponse({
+    return new JsonResponse({
       status: 404
     });
   }
 });
 
-router.all("*", () => new Response("Not Found.", { status: 404 }));
+router.all("*", () => new JsResponse("Not Found.", { status: 404 }));
 
 export default {
   async fetch(req, env, ctx) {

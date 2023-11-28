@@ -1,4 +1,4 @@
-class JsResponse extends Response {
+class JsonResponse extends Response {
   constructor(body, opt) {
     const options = {
       headers: {
@@ -8,8 +8,8 @@ class JsResponse extends Response {
         "Cache-Control": opt?.cache
       }
     };
-    super(body, options);
+    super(JSON.stringify(body), options);
   }
 }
 
-export default JsResponse;
+export default JsonResponse;
