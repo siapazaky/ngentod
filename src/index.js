@@ -1736,6 +1736,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
           "upgrade-insecure-requests": "1",
         }
       });
+      console.log(response.url);
       const html = await response.text();
       const body = cheerio.load(html);
       const scripts = [];
@@ -1803,7 +1804,7 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
     } else if (url.includes ("/videos/")) {
       const id = obtenerIDDesdeURL(url);
       return await dataFetch("https://www.facebook.com/watch/?v=" + id, false);
-    } else if (url.includes("facebook.com/reel")) {
+    } else if (url.includes("facebook.com/reel") || url.includes("facebook.com/share") ) {
       return await dataFetch(url, true);
     } else {
       console.log("Invalid url");
