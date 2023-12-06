@@ -11,7 +11,7 @@ import imgurApi from "./apis/imgurApi";
 import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
-import { nbFuck, nbFuckAngar, nbHug, nbHugAngar, nbKiss, nbKissAngar, nbKissChino } from "./utils/nightbotEmotes";
+import { nbCum, nbFuck, nbFuckAngar, nbHug, nbHugAngar, nbKiss, nbKissAngar, nbKissChino } from "./utils/nightbotEmotes";
 import YouTube from "youtube-sr";
 // import twitterApi from "./twitterApi";
 
@@ -206,6 +206,59 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const veces = counter === 1 ? "beso" : "besos";
     const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
     return new JsResponse(`@${user} -> Le has dado un beso a @${touserName} . Ha recibido ${counter} ${veces} en total. ${emote}`);
+  }
+});
+
+// cum v2
+router.get("/cum/v2/:user/:userId/:channelId/:touser", async (req, env) => {
+  const { user, userId, channelId, touser } = req.params;
+  const arr = [
+    "en la CARA",
+    "en la ESPALDA",
+    "en el PECHO",
+    "en las MANOS",
+    "en los PIES",
+    "en las TETAS",
+    "en la BOCA"
+  ];
+  const lugar = arr[Math.floor(Math.random()*arr.length)];
+  const percent = getRandom(100);
+  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const touserData = await twitch.getUserByName(touser);
+  if (!touserData) {
+    return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
+  }
+  const touserId = touserData.id;
+  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
+  const touserName = touserData.display_name;
+  const select = await env.NB.prepare(`SELECT count FROM cum WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+  const emote = nbCum[Math.floor(Math.random()*nbCum.length)];
+  if (userId === touserId) {
+    const count = select?.count;
+    const counter = count ? count + 1 : 1;
+    if (!select) {
+      await env.NB.prepare(`INSERT INTO cum (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
+      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM cum WHERE userId = ${touserId}`).first();
+    } else {
+      await env.NB.prepare(`UPDATE cum SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
+    }
+    const veces = counter === 1 ? "vez" : "veces";
+    return new JsResponse(`@${user} -> Has cumeado en ti mismo . Ha sido cumeado ${counter} ${veces} en total. ${emote}`);
+  } else if (percent < 50) {
+    const count = select?.count;
+    const counter = count ? count + 1 : 1;
+    if (!select) {
+      await env.NB.prepare(`INSERT INTO cum (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
+      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM cum WHERE userId = ${touserId}`).first();
+    } else {
+      await env.NB.prepare(`UPDATE cum SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
+      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
+    }
+    const veces = counter === 1 ? "vez" : "veces";
+    return new JsResponse(`@${user} -> Has cumeado ${lugar} de @${touserName} . Ha sido cumeado ${counter} ${veces} en total. ${emote}`);
+  } else {
+    return new JsResponse(`@${user} -> Has disparado tu cum pero cayó en el suelo. Apunta mejor la próxima vez. BloodTrail`);
   }
 });
 
@@ -439,12 +492,17 @@ router.get("/leaderboards/:channel?", async (req, env) => {
     const data = await env.NB.prepare(`SELECT * FROM ${table} WHERE channelId = '${id}' ORDER BY count DESC LIMIT ${limit}`).all();
     return data.results;
   };
+  const lists = [];
+  const fuck = await prepareTable("fuck");
+  const hug = await prepareTable("hug");
+  const kiss = await prepareTable("kiss");
+  const cum = await prepareTable("cum");
+  fuck[0] ? lists.push({ type: "fuck", results: fuck }) : null;
+  hug[0] ? lists.push({ type: "hug", results: hug }) : null;
+  kiss[0] ? lists.push({ type: "kiss", results: kiss }) : null;
+  cum[0] ? lists.push({ type: "cum", results: cum }) : null;
   const response = {
-    lists: [
-      { type: "fuck", results: await prepareTable("fuck") },
-      { type: "hug", results: await prepareTable("hug") },
-      { type: "kiss", results: await prepareTable("kiss") }
-    ],
+    lists: lists,
     users: users.results
   };
   return new JsonResponse(response);
