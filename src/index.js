@@ -1717,7 +1717,7 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       console.log("Invalid url");
       return JSON.stringify({status: 400});
     } else {
-      const response = await fetch(`https://www.instagram.com/p/${idUrl}?__a=1&__d=di`, {
+      const response = await fetch(`https://www.instagram.com/p/${idUrl}?__a=1&__d=dis`, {
         headers: {
           "cookie": _cookie,
           "user-agent": _userAgent,
@@ -1902,11 +1902,12 @@ router.get("/dc/tiktok-video-scrapper?", async (req, env) => {
       const scripts = [];
       body("script").each((i, el) => {
         const script = body(el).html();
-        if (script.includes("\"ItemModule\"")) {
+        if (script.includes("\"itemStruct\"")) {
           scripts.push(script);
         }
       });
-      const json = JSON.parse(scripts).ItemModule;
+      console.log(scripts);
+      const json = JSON.parse(scripts);
       const tt_id = jp.query(json, "$..[?(@.id)].id")[0];
       console.log(tt_id);
       const response = await fetch(`https://api.tiktokv.com/aweme/v1/feed/?aweme_id=${tt_id}`);
