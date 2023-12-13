@@ -1703,7 +1703,6 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
     const getInstagramId = (url) => {
       const regex = /instagram.com\/(?:p|reels|reel)\/([A-Za-z0-9-_]+)/;
       const match = url.match(regex);
-      console.log(match);
       if (match && match[1]) {
         return match[1];
       } else {
