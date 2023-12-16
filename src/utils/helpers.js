@@ -65,6 +65,15 @@ export const obtenerIDDesdeURL = (url) => {
   return null;
 };
 
+export const obtenerDiscordUserIdFromAvatarsCdn = (url) => {
+  const expresionRegular = /\/avatars\/(\d+)\//;
+  const resultado = expresionRegular.exec(url);
+  if (resultado && resultado.length > 1) {
+    return resultado[1];
+  }
+  return null;
+};
+
 export const getTimeUnitsFromISODate = (ISO) => {
   // Fecha proporcionada
   const targetDate = new Date(ISO);

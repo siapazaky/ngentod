@@ -1,5 +1,5 @@
 import { Router } from "itty-router";
-import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty, SettedTwitchTagsResponse } from "./utils/helpers";
+import { generateUniqueId, getDateAgoFromTimeStamp, getRandom, obtenerIDDesdeURL, obtenerDiscordUserIdFromAvatarsCdn, getTimeUnitsFromISODate, KVSorterByValue, jsonCustomSorterByProperty, SettedTwitchTagsResponse } from "./utils/helpers";
 import twitchApi from "./apis/twitchApi";
 import JsResponse from "./response";
 import JsonResponse from "./jsonResponse";
@@ -1059,13 +1059,14 @@ router.get("/spotify/current_playing/:channelID/:channel", async (req, env) => {
   }
 });
 
-router.get("/put-r2-image", async (req, env,) => {
-  const form = new FormData();
-  const url = "https://pesp.gg/images/banners/Principal_f.jpg";
+router.get("/put/discord-avatars?", async (req, env,) => {
+  const url = req.query.url;
+  const id = obtenerIDDesdeURL(url);
+  const userId = obtenerDiscordUserIdFromAvatarsCdn(url);
   const data = await fetch(url);
-  const imageBlob = await data.blob();
-  const object = await env.R2gpt.put("openaiIMGG", imageBlob);
-  return new JsResponse(object);
+  const blob = await data.blob();
+  const object = await env.R2cdn.put(`discord-avatars/${userId}/${id}`, blob);
+  return new JsResponse(JSON.stringify(object));
 });
 
 router.get("/put-r2-gemi-chan?", async (req, env, ctx) => {
