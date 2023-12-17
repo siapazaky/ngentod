@@ -1806,15 +1806,19 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
           }
         });
         const json_media = JSON.parse(scripts[0]).require[0];
-        const json_text = JSON.parse(scripts[1]).require[0];
+        const json_text = scripts[1] ? JSON.parse(scripts[1]).require[0] : null;
         let data;
         let caption;
-        json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
-          if (el[0] == "RelayPrefetchedStreamCache") {
-            const step1 = el[el.length - 1];
-            caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text?.replaceAll(/\n\n/g, "\n") ?? null;
-          }
-        });
+        if (json_text) {
+          json_text[json_text.length - 1][0]?.__bbox?.require.forEach(el => {
+            if (el[0] == "RelayPrefetchedStreamCache") {
+              const step1 = el[el.length - 1];
+              caption = step1[step1.length - 1]?.__bbox?.result?.data?.attachments[0]?.media?.creation_story?.comet_sections?.message?.story?.message?.text?.replaceAll(/\n\n/g, "\n") ?? null;
+            }
+          });
+        } else {
+          caption = null;
+        }
         json_media[json_media.length - 1][0]?.__bbox?.require.forEach(el => {
           if (el[0] == "RelayPrefetchedStreamCache") {
             const step1 = el[el.length - 1];
