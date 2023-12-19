@@ -1734,7 +1734,6 @@ router.get("/dc/instagram-video-scrapper?", async (req, env) => {
       } else {
         caption = "";
       }
-      console.log(items);
       if (items.video_versions) {
         if (items.video_versions[0].height <= 720) {
           video_url = items.video_versions[0].url;
