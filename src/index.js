@@ -1860,12 +1860,12 @@ router.get("/dc/facebook-video-scrapper?", async (req, env) => {
       }
     };
 
-    if (url.includes("facebook.com/watch") || url.includes("fb.watch/") || url.includes("fb.gg/")) {
+    if (url.includes("facebook.com/watch") || url.includes("fb.watch/") || url.includes("fb.gg/") || url.includes("facebook.com/share/v")) {
       return await dataFetch(url, false);
     } else if (url.includes ("/videos/")) {
       const id = obtenerIDDesdeURL(url);
       return await dataFetch("https://www.facebook.com/watch/?v=" + id, false);
-    } else if (url.includes("facebook.com/reel") || url.includes("facebook.com/share") ) {
+    } else if (url.includes("facebook.com/reel") || url.includes("facebook.com/share/r") ) {
       return await dataFetch(url, true);
     } else {
       console.log("Invalid url");
