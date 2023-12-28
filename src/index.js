@@ -12,7 +12,7 @@ import jp from "jsonpath";
 import * as cheerio from "cheerio";
 import { lolChampTagAdder } from "./crons/lolChampTagAdder";
 import { nbCum, nbFuck, nbFuckAngar, nbHug, nbHugAngar, nbKiss, nbKissAngar, nbKissChino } from "./utils/nightbotEmotes";
-import YouTube from "youtube-sr";
+import youtubeApi from "./apis/youtubeApi";
 // import twitterApi from "./twitterApi";
 
 const router = Router();
@@ -2255,22 +2255,23 @@ router.get("/dc/twitch-video-scrapper?", async (req, env) => {
 
 router.get("/dc/yt-info?", async (req, env) => {
   const { url } = req.query;
+  const youtube = new youtubeApi(env.youtube_token);
   const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/)?|youtu\.be\/)([a-zA-Z0-9_-]+)/;
   const videoUrl = decodeURIComponent(url);
   const id = videoUrl.match(regex)[1];
+  console.log(id);
   try {
-    const ytInfo = await YouTube.getVideo("https://youtu.be/" + id);
-    const short_url = "https://youtu.be/" + ytInfo.id;
+    const { items } = await youtube.getVideoInfo(id);
+    const { snippet } = items[0];
+    const short_url = "https://youtu.be/" + id;
     return new JsonResponse({
-      caption: ytInfo.title,
-      duration: ytInfo.duration,
+      caption: snippet.title,
       short_url: short_url,
       status: 200
     });
-  } catch (e) {
-    return new JsonResponse({
-      status: 404
-    });
+  } catch(e) {
+    console.log(e);
+    return new JsonResponse({ status: 404 });
   }
 });
 
