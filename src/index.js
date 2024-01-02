@@ -53,13 +53,12 @@ router.get("/educar/:user/:channel/:touser", async (req, env) => {
 router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
   const { user, touser } = req.params;
   const channelId = req.params.channelID;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const userId = await twitch.getId(user);
   const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
@@ -70,10 +69,8 @@ router.get("/kiss/:user/:channelID/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM kiss WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "beso" : "besos";
     const emote = nbKissAngar[Math.floor(Math.random()*nbKissAngar.length)];
@@ -86,13 +83,12 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
   const { user, touser } = req.params;
   const channelId = req.params.channelID;
   const percent = getRandom(100);
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const userId = await twitch.getId(user);
   const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
@@ -103,10 +99,8 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM fuck WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "vez" : "veces";
     const emote = nbFuckAngar[Math.floor(Math.random()*nbFuckAngar.length)];
@@ -120,13 +114,12 @@ router.get("/fuck/:user/:channelID/:touser", async (req, env) => {
 router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
   const percent = getRandom(100);
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const select = await env.NB.prepare(`SELECT count FROM fuck WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
   if (userId === touserId) {
@@ -136,10 +129,8 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO fuck (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM fuck WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE fuck SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "vez" : "veces";
     const emote = nbFuck[Math.floor(Math.random()*nbFuck.length)];
@@ -152,13 +143,12 @@ router.get("/fuck/v2/:user/:userId/:channelId/:touser", async (req, env) => {
 // hug v2
 router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url?.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
   if (userId === touserId) {
@@ -168,10 +158,8 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM hug WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "abrazo" : "abrazos";
     const emote = nbHug[Math.floor(Math.random()*nbHug.length)];
@@ -182,13 +170,12 @@ router.get("/hug/v2/:user/:userId/:channelId/:touser", async (req, env) => {
 // kiss v2
 router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   const { user, userId, channelId, touser } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const select = await env.NB.prepare(`SELECT count FROM kiss WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
   if (userId === touserId) {
@@ -198,10 +185,8 @@ router.get("/kiss/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO kiss (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM kiss WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE kiss SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "beso" : "besos";
     const emote = channelId === "750542567" ? nbKissChino[Math.floor(Math.random()*nbKissChino.length)] : nbKiss[Math.floor(Math.random()*nbKiss.length)];
@@ -223,13 +208,12 @@ router.get("/cum/v2/:user/:userId/:channelId/:touser", async (req, env) => {
   ];
   const lugar = arr[Math.floor(Math.random()*arr.length)];
   const percent = getRandom(100);
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const select = await env.NB.prepare(`SELECT count FROM cum WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
   const emote = nbCum[Math.floor(Math.random()*nbCum.length)];
@@ -238,10 +222,8 @@ router.get("/cum/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO cum (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM cum WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE cum SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "vez" : "veces";
     return new JsResponse(`@${user} -> Has cumeado en ti mismo . Ha sido cumeado ${counter} ${veces} en total. ${emote}`);
@@ -250,10 +232,8 @@ router.get("/cum/v2/:user/:userId/:channelId/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO cum (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM cum WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE cum SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "vez" : "veces";
     return new JsResponse(`@${user} -> Has cumeado ${lugar} de @${touserName} . Ha sido cumeado ${counter} ${veces} en total. ${emote}`);
@@ -268,7 +248,7 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
   const percent = getRandom(100);
   let mensaje = null;
   const error_msg = `${user}, El usuario que has mencionado no existe. FallHalp`;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   let id_angar = "27457904";
   try {
     const id_user = await twitch.getId(user);
@@ -339,13 +319,12 @@ router.get("/cum/:user/:channelID/:touser", async (req, env) => {
 router.get("/hug/:user/:channelID/:touser", async (req, env) => {
   const { user, touser } = req.params;
   const channelId = req.params.channelID;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const touserData = await twitch.getUserByName(touser);
   if (!touserData) {
     return new JsResponse(`@${user} -> El usuario que has mencionado no existe. FallHalp`);
   }
   const touserId = touserData.id;
-  const avatar = touserData.profile_image_url.replace("https://static-cdn.jtvnw.net/","");
   const touserName = touserData.display_name;
   const userId = await twitch.getId(user);
   const select = await env.NB.prepare(`SELECT count FROM hug WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
@@ -356,10 +335,8 @@ router.get("/hug/:user/:channelID/:touser", async (req, env) => {
     const counter = count ? count + 1 : 1;
     if (!select) {
       await env.NB.prepare(`INSERT INTO hug (userId, user, channelId) VALUES ('${touserId}', '${touserName}', '${channelId}')`).first();
-      await env.NB.prepare(`INSERT OR REPLACE INTO users (userId, avatar) SELECT DISTINCT userId, '${avatar}' FROM hug WHERE userId = ${touserId}`).first();
     } else {
       await env.NB.prepare(`UPDATE hug SET count = '${counter}', user = '${touserName}' WHERE userId = '${touserId}' AND channelId = '${channelId}'`).first();
-      await env.NB.prepare(`UPDATE users SET avatar = '${avatar}' WHERE userId = '${touserId}'`).first();
     }
     const veces = counter === 1 ? "abrazo" : "abrazos";
     const emote = nbHugAngar[Math.floor(Math.random()*nbHugAngar.length)];
@@ -372,7 +349,7 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
   const { user, touser, channelID } = req.params;
   let mensaje = null;
   const error_msg = `@${user} -> El usuario que has mencionado no existe. FallHalp`;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   try {
     const id_user = await twitch.getId(user);
     const id_touser = await twitch.getId(touser);
@@ -403,7 +380,7 @@ router.get("/spank/:user/:channelID/:touser", async (req, env) => {
 // Get Twitch User by ID
 router.get("/user/:id_user", async (req, env) => {
   const { id_user } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const username = await twitch.getUsername(id_user);
   return new JsResponse(username);
 });
@@ -411,7 +388,7 @@ router.get("/user/:id_user", async (req, env) => {
 // Get Twitch Id by User
 router.get("/id/:user", async (req, env) => {
   const { user } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const id = await twitch.getId(user);
   return new JsResponse(id);
 });
@@ -421,7 +398,7 @@ router.get("/top_users/angar/:env_var", async (req, env, ctx) => {
   let { env_var } = req.params;
   env_var = env_var.toUpperCase();
   let limit = 10;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const KV = (await env[env_var].list()).keys;
   const KV_sorted = KVSorterByValue(KV);
   let top_users_json = KV_sorted.map(users_keys => {
@@ -451,7 +428,7 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
   let { env_var } = req.params;
   env_var = env_var.toUpperCase();
   let limit = 10;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const KV = (await env[env_var].list()).keys;
   const KV_sorted = KVSorterByValue(KV);
   let top_users_json = KV_sorted.map(users_keys => {
@@ -485,9 +462,9 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
 router.get("/leaderboards/:channel?", async (req, env) => {
   const { channel } = req.params;
   const { limit } = req.query;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const id = await twitch.getId(channel);
-  const users = await env.NB.prepare("SELECT * FROM users").all();
+  const users = await env.NB.prepare("SELECT * FROM twitch").all();
   const prepareTable = async (table) => {
     const data = await env.NB.prepare(`SELECT * FROM ${table} WHERE channelId = '${id}' ORDER BY count DESC LIMIT ${limit}`).all();
     return data.results;
@@ -513,7 +490,7 @@ router.get("/chupar/:user/:channel_id/:query", async (req, env) => {
   const mod_id = "71492353"; // ahmed
   let mensaje = "";
   let query_touser = query.replace("touser:", "");
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const auth_list = (await env.AUTH_USERS.list()).keys;
   if (query == "touser:" || query_touser == user) {
     let response = (await Promise.all((auth_list.map(async(users_keys) => {
@@ -821,7 +798,7 @@ router.get("/twitch/auth", async (req, env) => {
 router.get("/twitch/user-oauth?", async (req, env) => {
   const { query } = req;
   console.log(query);
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const redirect_uri = env.WORKER_URL + "/twitch/user-oauth";
   if (query.code && query.scope) {
     const response = await twitch.OauthCallback(query.code, redirect_uri);
@@ -838,7 +815,7 @@ router.get("/twitch/user-oauth?", async (req, env) => {
 // Nightbot command: get Top Bits Cheerers Leaderboard with 3 pages
 router.get("/leaderboard/:channelID/:page", async (req, env) => {
   const { channelID, page } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const auth_list = (await env.AUTH_USERS.list()).keys;
   const break_line = "────────────────────────────────";
   let msg = "";
@@ -877,7 +854,7 @@ router.get("/leaderboard/:channelID/:page", async (req, env) => {
 // Get Stream Tags
 router.get("/tags/:channelID", async (req, env) => {
   const { channelID } = req.params;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const actualtags = await twitch.getBroadcasterInfo(channelID);
   const response = String(actualtags.tags);
   console.log(response);
@@ -890,7 +867,7 @@ router.get("/set_tags/:channelID/:query", async (req, env) => {
   let query_tags = decodeURIComponent(query);
   query_tags = query_tags.replaceAll(" ","").replace("tags:","").split(",");
   let tags_length = query_tags.length;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   if (query == "tags:") {
     let actualtags = await twitch.getBroadcasterInfo(channelID);
     const response = `Etiquetas actuales: ${String(actualtags.tags).replaceAll(/,/g,", ")}`;
@@ -906,7 +883,7 @@ router.get("/addmod/:user_id/:channel_id/:touser", async (req, env) => {
   const { user_id, channel_id, touser } = req.params;
   const ahmed = "71492353";
   let response = "";
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   if (user_id == ahmed || user_id == channel_id) {
     const auth_list = (await env.AUTH_USERS.list()).keys;
     response = (await Promise.all((auth_list.map(async(users_keys) => {
@@ -939,7 +916,7 @@ router.get("/unmod/:user_id/:channel_id/:touser", async (req, env) => {
   const { user_id, channel_id, touser } = req.params;
   const ahmed = "71492353";
   let response = "";
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   if (user_id == ahmed || user_id == channel_id) {
     const auth_list = (await env.AUTH_USERS.list()).keys;
     response = (await Promise.all((auth_list.map(async(users_keys) => {
@@ -970,7 +947,7 @@ router.get("/shoutout/:user/:channel/:channel_id/:touser", async (req, env) => {
   if (user.toLowerCase() === touser.toLowerCase()) {
     return new JsResponse(`@${user} -> No puedes hacer shoutout a ti mismo.`);
   }
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const auth_list = (await env.AUTH_USERS.list()).keys;
   const response = (await Promise.all((auth_list.map(async(users_keys) => {
     if (channel_id !== users_keys.name) return;
@@ -2160,27 +2137,24 @@ router.get("/dc/kick-live?", async (req, env) => {
 router.get("/followage/:channel/:touser?", async (req, env) => {
   const { channel, touser } = req.params;
   const { moderator_id } = req.query;
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const channel_id = await twitch.getId(channel);
   const access_id = moderator_id ? moderator_id : channel_id;
   const auth = await env.AUTH_USERS.get(access_id);
   console.log(auth);
   if (auth) {
-    try {
-      const touser_id = await twitch.getId(touser);
-      const access_token = await twitch.RefreshToken(auth);
-      const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
-      console.log(data);
-      if (data?.followed_at) {
-        const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-        return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
-      } else if (data?.message) {
-        return new JsResponse(`El usuario con id: ${moderator_id} no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
-      }
-    } catch (e) {
-      console.log(e);
+    const touser_id = await twitch.getId(touser);
+    if (!touser_id)
       return new JsResponse("El usuario que has mencionado no existe. FallHalp");
+    const access_token = await twitch.RefreshToken(auth);
+    const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
+    if (data?.followed_at) {
+      const unitsString = getTimeUnitsFromISODate(data?.followed_at);
+      return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
+    } else if (data?.message) {
+      return new JsResponse(`El usuario con id: ${moderator_id} no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
     }
+
     return new JsResponse(`@${touser} no está siguiendo a ${channel}`);
   } else if (!auth && moderator_id) {
     return new JsResponse(`El usuario con id: ${moderator_id} no está autorizado. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
@@ -2243,7 +2217,7 @@ router.get("/dc/twitch-video-scrapper?", async (req, env) => {
   const { query } = req;
   const url = decodeURIComponent(query.url);
   const id = obtenerIDDesdeURL(url);
-  const twitch = new twitchApi(env.client_id, env.client_secret);
+  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
   const obj = {};
   try {
     const data = await twitch.getClips(id);
