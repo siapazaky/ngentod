@@ -806,13 +806,13 @@ router.get("/dc/image-variation/:url", async (req, env) => {
 // Twitch Auth that redirect to oauth callback to save authenticated users
 router.get("/twitch/auth", async (req, env) => {
   const { scopes } = req.query;
+  const allScopes = "bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows moderation:read";
   const redirect_uri = env.WORKER_URL + "/twitch/user-oauth";
-  // bits:read channel:manage:broadcast channel:read:subscriptions channel:manage:moderators moderator:read:chatters moderator:manage:shoutouts moderator:read:followers user:read:follows
   const dest = new URL("https://id.twitch.tv/oauth2/authorize?"); // destination
   dest.searchParams.append("client_id", env.client_id);
   dest.searchParams.append("redirect_uri", redirect_uri);
   dest.searchParams.append("response_type", "code");
-  dest.searchParams.append("scope", decodeURIComponent(scopes));
+  dest.searchParams.append("scope", scopes === "all" ? allScopes : decodeURIComponent(scopes));
   console.log(dest);
   return Response.redirect(dest, 302);
 });
@@ -2164,17 +2164,26 @@ router.get("/followage/:channel/:touser?", async (req, env) => {
   const channel_id = await twitch.getId(channel);
   const access_id = moderator_id ? moderator_id : channel_id;
   const auth = await env.AUTH_USERS.get(access_id);
+  console.log(auth);
   if (auth) {
-    const touser_id = await twitch.getId(touser);
-    const access_token = await twitch.RefreshToken(auth);
-    const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
-    if (data?.followed_at) {
-      const unitsString = getTimeUnitsFromISODate(data?.followed_at);
-      return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
+    try {
+      const touser_id = await twitch.getId(touser);
+      const access_token = await twitch.RefreshToken(auth);
+      const data = await twitch.getChannelFollower(access_token, channel_id, touser_id);
+      console.log(data);
+      if (data?.followed_at) {
+        const unitsString = getTimeUnitsFromISODate(data?.followed_at);
+        return new JsResponse(`@${touser} ha estado siguiendo a ${channel} por ${unitsString}`);
+      } else if (data?.message) {
+        return new JsResponse(`El usuario con id: ${moderator_id} no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+      }
+    } catch (e) {
+      console.log(e);
+      return new JsResponse("El usuario que has mencionado no existe. FallHalp");
     }
     return new JsResponse(`@${touser} no está siguiendo a ${channel}`);
   } else if (!auth && moderator_id) {
-    return new JsResponse(`El usuario (${moderator_id}) no está autorizado o no es moderador. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
+    return new JsResponse(`El usuario con id: ${moderator_id} no está autorizado. Verifique el id o asegure que ya esté autorizado: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
   }
   return new JsResponse(`Es necesario que ${moderator_id ? "el moderador" : "el streamer"} inicie sesión en este enlace: ${env.WORKER_URL}/twitch/auth?scopes=moderator:read:followers`);
 });

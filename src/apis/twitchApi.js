@@ -213,16 +213,19 @@ class twitchApi {
 
   // Get if someone follow a broadcaster (requires boradcaster oauth)
   async getChannelFollower (user_access_token, channel_id, user_id) {
-    const api = `${this.API_BASE}/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
-    const response = await fetch(api, {
-      method: "GET",
-      headers: {
-        "Client-ID": this.client_id,
-        "Authorization": "Bearer " + user_access_token
-      }});
-    const { data } = await response.json();
-    return data[0];
-
+    try {
+      const api = `${this.API_BASE}/channels/followers?broadcaster_id=${channel_id}&user_id=${user_id}`;
+      const response = await fetch(api, {
+        method: "GET",
+        headers: {
+          "Client-ID": this.client_id,
+          "Authorization": "Bearer " + user_access_token
+        }});
+      const { data, message } = await response.json();
+      return data ? data[0] : { message };
+    } catch (e) {
+      return null;
+    }
   }
 
   // Get Clips
