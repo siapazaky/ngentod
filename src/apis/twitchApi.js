@@ -45,12 +45,13 @@ class twitchApi {
     }
   }
 
-  async getId (user_name) {
-    const database = await this.database.prepare(`SELECT id FROM twitch WHERE login = '${user_name.toLowerCase()}'`).first();
+  async getId (name) {
+    const decodedName = decodeURIComponent(name);
+    const database = await this.database.prepare(`SELECT * FROM twitch WHERE login = '${decodedName.toLowerCase()}'`).first();
     if (!database) {
       try {
         const accessToken = await this.getAccessToken();
-        const api = `${this.API_BASE}/users?login=${user_name.toLowerCase()}`;
+        const api = `${this.API_BASE}/users?login=${decodedName.toLowerCase()}`;
         const headers = {
           "Client-ID": this.client_id,
           "Authorization": "Bearer " + accessToken
@@ -70,6 +71,34 @@ class twitchApi {
       }
     }
     return database.id;
+  }
+
+  async getUserByName (name) {
+    const decodedName = decodeURIComponent(name);
+    const database = await this.database.prepare(`SELECT * FROM twitch WHERE login = '${decodedName.toLowerCase()}'`).first();
+    if (!database) {
+      try {
+        const accessToken = await this.getAccessToken();
+        const api = `${this.API_BASE}/users?login=${decodedName.toLowerCase()}`;
+        const headers = {
+          "Client-ID": this.client_id,
+          "Authorization": "Bearer " + accessToken
+        };
+
+        if(!accessToken) {
+          console.log("No Token");
+          return null;
+        } else {
+          const response = await fetch(api, {method: "GET", headers: headers});
+          const { data } = await response.json();
+          await this.database.prepare(`INSERT OR REPLACE INTO twitch (id, display_name, login, avatar) VALUES ('${data[0].id}', '${data[0].display_name}', '${data[0].login}', '${data[0].profile_image_url.replace("https://static-cdn.jtvnw.net/","")}')`).first();
+          return data[0];
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+    return database;
   }
 
   async getBroadcasterInfo(channel_id) {
@@ -255,33 +284,6 @@ class twitchApi {
       const data = await response.json();
       return data.data[0];
     };
-  }
-
-  async getUserByName (name) {
-    const database = await this.database.prepare(`SELECT * FROM twitch WHERE login = '${name.toLowerCase()}'`).first();
-    if (!database) {
-      try {
-        const accessToken = await this.getAccessToken();
-        const api = `${this.API_BASE}/users?login=${name.toLowerCase()}`;
-        const headers = {
-          "Client-ID": this.client_id,
-          "Authorization": "Bearer " + accessToken
-        };
-
-        if(!accessToken) {
-          console.log("No Token");
-          return null;
-        } else {
-          const response = await fetch(api, {method: "GET", headers: headers});
-          const { data } = await response.json();
-          await this.database.prepare(`INSERT OR REPLACE INTO twitch (id, display_name, login, avatar) VALUES ('${data[0].id}', '${data[0].display_name}', '${data[0].login}', '${data[0].profile_image_url.replace("https://static-cdn.jtvnw.net/","")}')`).first();
-          return data[0];
-        };
-      } catch (e) {
-        return null;
-      }
-    }
-    return database;
   }
 }
 

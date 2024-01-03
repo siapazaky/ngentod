@@ -462,8 +462,7 @@ router.get("/top_users/zihnee/:env_var", async (req, env, ctx) => {
 router.get("/leaderboards/:channel?", async (req, env) => {
   const { channel } = req.params;
   const { limit } = req.query;
-  const twitch = new twitchApi(env.client_id, env.client_secret, env.NB);
-  const id = await twitch.getId(channel);
+  const { id } = await env.NB.prepare(`SELECT id FROM twitch WHERE login = '${channel.toLowerCase()}'`).first();
   const users = await env.NB.prepare("SELECT * FROM twitch").all();
   const prepareTable = async (table) => {
     const data = await env.NB.prepare(`SELECT * FROM ${table} WHERE channelId = '${id}' ORDER BY count DESC LIMIT ${limit}`).all();
@@ -807,7 +806,7 @@ router.get("/twitch/user-oauth?", async (req, env) => {
     const { login, user_id } = await validation.json();
     const key = user_id;
     await env.AUTH_USERS.put(key, refresh_token, {metadata: {value: refresh_token},});
-    return new JsResponse(`Usuario autenticado: ${login}\nID: ${user_id}`);
+    return new JsResponse(`Usuario autenticado: ${login}\nID: ${user_id}\nAccess Token: ${access_token}`);
   }
   return new JsResponse("Error. Authentication failed.");
 });
