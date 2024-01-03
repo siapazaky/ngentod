@@ -463,23 +463,33 @@ router.get("/leaderboards/:channel?", async (req, env) => {
   const { channel } = req.params;
   const { limit } = req.query;
   const { id } = await env.NB.prepare(`SELECT id FROM twitch WHERE login = '${channel.toLowerCase()}'`).first();
-  const users = await env.NB.prepare("SELECT * FROM twitch").all();
-  const prepareTable = async (table) => {
-    const data = await env.NB.prepare(`SELECT * FROM ${table} WHERE channelId = '${id}' ORDER BY count DESC LIMIT ${limit}`).all();
-    return data.results;
-  };
+  const subSelect = (type) => `SELECT userId, user, count FROM ${type} WHERE channelId = ${id} ORDER BY count DESC LIMIT ${limit}`;
+  const joinSelect = (type) => `SELECT userId, user, count, '${type}' as type FROM (${subSelect(type)})`;
+  const data = await env.NB.prepare(`
+    SELECT t.id, sub.user as display_name, t.avatar, sub.count, sub.type
+    FROM twitch t
+    JOIN (
+        ${joinSelect("fuck")}
+        UNION ALL
+        ${joinSelect("hug")}
+        UNION ALL
+        ${joinSelect("kiss")}
+        UNION ALL
+        ${joinSelect("cum")}
+    ) sub
+    ON t.id = sub.userId ORDER BY sub.count DESC
+  `).all();
   const lists = [];
-  const fuck = await prepareTable("fuck");
-  const hug = await prepareTable("hug");
-  const kiss = await prepareTable("kiss");
-  const cum = await prepareTable("cum");
+  const fuck = data?.results.filter(item => item.type === "fuck");
+  const hug = data?.results.filter(item => item.type === "hug");
+  const kiss = data?.results.filter(item => item.type === "kiss");
+  const cum = data?.results.filter(item => item.type === "cum");
   fuck[0] ? lists.push({ type: "fuck", results: fuck }) : null;
   hug[0] ? lists.push({ type: "hug", results: hug }) : null;
   kiss[0] ? lists.push({ type: "kiss", results: kiss }) : null;
   cum[0] ? lists.push({ type: "cum", results: cum }) : null;
   const response = {
     lists: lists,
-    users: users.results
   };
   return new JsonResponse(response);
 });
@@ -2265,7 +2275,7 @@ export default {
   },
   async scheduled(event, env, ctx) {
     switch (event.cron) {
-    case "*/3 * * * *":
+    case "*/5 * * * *":
       await lolChampTagAdder(env);
       break;
     }
